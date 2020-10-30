@@ -38,10 +38,10 @@ require_once("../../partials/routes.php");
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row justify-content-center">
                     <!-- /.col -->
                     <div class="col-4">
-                        <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
+                        <button type="submit" class="btn btn-success btn-block">Ingresar</button>
                     </div>
                     <!-- /.col -->
                 </div>
