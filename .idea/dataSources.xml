@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="plotter" uuid="45630871-198b-45f5-9aff-b09b32809875">
+    <data-source source="LOCAL" name="plotter" uuid="20354a94-3c76-4ddc-83be-d1e9c5374ccb">
       <driver-ref>mysql.8</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>com.mysql.cj.jdbc.Driver</jdbc-driver>

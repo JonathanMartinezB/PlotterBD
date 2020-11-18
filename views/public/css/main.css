@@ -1,4 +1,1 @@
-#example{font-size:16px;color:#18F483}
-.login-page, .register-page {
-    background: mediumpurple ;
-}
+#example{font-size:16px;color:#18F483}.login-page,.register-page{background-image:url("../img/pepe.png");background-position:center;background-repeat:no-repeat;background-size:cover}.login-logo{text-shadow:-3px -3px 8px rgba(15,63,74,0.94)}.login-logo a,.register-logo a{color:aliceblue}
