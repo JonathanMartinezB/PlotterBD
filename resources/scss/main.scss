@@ -5,3 +5,17 @@ $verde : #18F483;
   font-size: $base-font-size;
   color: $verde;
 }
+.login-page, .register-page {
+  background-image: url("../img/pepe.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.login-logo {
+  text-shadow: -3px -3px 8px rgba(15,63,74,0.94);
+}
+
+.login-logo a, .register-logo a{
+  color: aliceblue;
+}
