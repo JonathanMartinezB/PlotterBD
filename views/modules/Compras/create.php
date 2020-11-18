@@ -1,6 +1,6 @@
 <?php
-require_once("../../../app/Controllers/DetalleVentasController.php");
-require_once("../../../app/Controllers/VentasController.php");
+require_once("../../../app/Controllers/DetalleComprasController.php");
+require_once("../../../app/Controllers/ComprasController.php");
 require_once("../../../app/Controllers/UsuariosController.php");
 require_once("../../../app/Controllers/ProductosController.php");
 require("../../partials/routes.php");
@@ -8,15 +8,15 @@ require_once("../../partials/check_login.php");
 
 use App\Controllers\ProductosController;
 use App\Controllers\UsuariosController;
-use App\Controllers\VentasController;
-use App\Models\DetalleVentas;
+use App\Controllers\ComprasController;
+use App\Models\DetalleCompras;
 
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Crear Venta</title>
+    <title><?= $_ENV['TITLE_SITE'] ?> | Crear Compra</title>
     <?php require("../../partials/head_imports.php"); ?>
     <!-- DataTables -->
     <link rel="stylesheet" href="<?= $adminlteURL ?>/plugins/datatables-bs4/css/dataTables.bootstrap4.css">
@@ -39,7 +39,7 @@ use App\Models\DetalleVentas;
                 <div class="alert alert-danger alert-dismissible">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
                     <h5><i class="icon fas fa-ban"></i> Error!</h5>
-                    Error al crear la venta: <?= $_GET['mensaje'] ?>
+                    Error al crear la compra: <?= $_GET['mensaje'] ?>
                 </div>
             <?php } ?>
         <?php } ?>
@@ -49,11 +49,11 @@ use App\Models\DetalleVentas;
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Crear una Nueva Venta</h1>
+                        <h1>Crear una Nueva Compra</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="<?= $baseURL; ?>/Views/">WebER</a></li>
+                            <li class="breadcrumb-item"><a href="<?= $baseURL; ?>/Views/">Plotter</a></li>
                             <li class="breadcrumb-item active">Inicio</li>
                         </ol>
                     </div>
@@ -70,7 +70,7 @@ use App\Models\DetalleVentas;
                         <div class="card card-info">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-shopping-cart"></i> &nbsp; Información de la
-                                    Venta</h3>
+                                    Compra</h3>
                                 <div class="card-tools">
                                     <button type="button" class="btn btn-tool" data-card-widget="card-refresh"
                                             data-source="create.php" data-source-selector="#card-refresh-content"
@@ -83,13 +83,13 @@ use App\Models\DetalleVentas;
                             </div>
 
                             <div class="card-body">
-                                <form class="form-horizontal" method="post" id="frmCreateVenta" name="frmCreateVenta"
-                                      action="../../../app/Controllers/VentasController.php?action=create">
+                                <form class="form-horizontal" method="post" id="frmCreateCompra" name="frmCreateCompra"
+                                      action="../../../app/Controllers/ComprasController.php?action=create">
 
                                     <?php
-                                    $dataVenta = null;
+                                    $dataCompra = null;
                                     if (!empty($_GET['id'])) {
-                                        $dataVenta = VentasController::searchForID($_GET['id']);
+                                        $dataCompra = ComprasController::searchForID($_GET['id']);
                                     }
                                     ?>
 
@@ -113,33 +113,33 @@ use App\Models\DetalleVentas;
                                                 true,
                                                 'empleado_id',
                                                 'empleado_id',
-                                                (!empty($dataVenta)) ? $dataVenta->getEmpleadoId()->getId() : '',
+                                                (!empty($dataCompra)) ? $dataCompra->getEmpleadoId()->getId() : '',
                                                 'form-control select2bs4 select2-info',
                                                 "rol = 'Empleado' and estado = 'Activo'")
                                             ?>
                                         </div>
                                     </div>
                                     <?php
-                                    if (!empty($dataVenta)) {
+                                    if (!empty($dataCompra)) {
                                         ?>
                                         <div class="form-group row">
                                             <label for="numero_serie" class="col-sm-4 col-form-label">Codigo
                                                 Factura</label>
                                             <div class="col-sm-8">
-                                                <?= $dataVenta->getNumeroSerie() ?>-<?= $dataVenta->getId() ?>
+                                                <?= $dataCompra->getNumeroSerie() ?>-<?= $dataCompra->getId() ?>
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label for="numero_serie" class="col-sm-4 col-form-label">Fecha
-                                                Venta</label>
+                                                Compra</label>
                                             <div class="col-sm-8">
-                                                <?= $dataVenta->getFechaVenta() ?>
+                                                <?= $dataCompra->getFechaCompra() ?>
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label for="numero_serie" class="col-sm-4 col-form-label">Monto</label>
                                             <div class="col-sm-8">
-                                                <?= $dataVenta->getMonto() ?>
+                                                <?= $dataCompra->getMonto() ?>
                                             </div>
                                         </div>
                                     <?php } ?>
@@ -154,7 +154,7 @@ use App\Models\DetalleVentas;
                     <div class="col-md-8">
                         <div class="card card-lightblue">
                             <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-parachute-box"></i> &nbsp; Detalle Venta</h3>
+                                <h3 class="card-title"><i class="fas fa-parachute-box"></i> &nbsp; Detalle Compra</h3>
                                 <div class="card-tools">
                                     <button type="button" class="btn btn-tool" data-card-widget="card-refresh"
                                             data-source="create.php" data-source-selector="#card-refresh-content"
@@ -195,33 +195,33 @@ use App\Models\DetalleVentas;
                                             <tbody>
                                             <?php
                                             if (!empty($_GET['id'])) {
-                                                $arrDetalleVentas = DetalleVentas::search("SELECT * FROM plotter.detalle_ventas WHERE ventas_id = ".$_GET['id']);
-                                                if(count($arrDetalleVentas) > 0) {
-                                                    /* @var $arrDetalleVentas \App\Models\DetalleVentas[] */
-                                                    foreach ($arrDetalleVentas as $detalleVenta) {
+                                                $arrDetalleCompras = DetalleCompras::search("SELECT * FROM plotter.detalle_compras WHERE compras_id = ".$_GET['id']);
+                                                if(count($arrDetalleCompras) > 0) {
+                                                    /* @var $arrDetalleCompras \App\Models\DetalleCompras[] */
+                                                    foreach ($arrDetalleCompras as $detalleCompra) {
                                                         ?>
                                                         <tr>
-                                                            <td><?php echo $detalleVenta->getId(); ?></td>
-                                                            <td><?php echo $detalleVenta->getProductoId()->getNombres(); ?></td>
-                                                            <td><?php echo $detalleVenta->getCantidad(); ?></td>
-                                                            <td><?php echo $detalleVenta->getPrecio(); ?></td>
+                                                            <td><?php echo $detalleCompra->getId(); ?></td>
+                                                            <td><?php echo $detalleCompra->getProductoId()->getNombres(); ?></td>
+                                                            <td><?php echo $detalleCompra->getCantidad(); ?></td>
+                                                            <td><?php echo $detalleCompra->getPrecio(); ?></td>
                                                             <td>
-                                                                <a href="edit.php?id=<?php echo $detalleVenta->getId(); ?>"
+                                                                <a href="edit.php?id=<?php echo $detalleCompra->getId(); ?>"
                                                                    type="button" data-toggle="tooltip" title="Actualizar"
                                                                    class="btn docs-tooltip btn-primary btn-xs"><i
                                                                             class="fa fa-edit"></i></a>
-                                                                <a href="show.php?id=<?php echo $detalleVenta->getId(); ?>"
+                                                                <a href="show.php?id=<?php echo $detalleCompra->getId(); ?>"
                                                                    type="button" data-toggle="tooltip" title="Ver"
                                                                    class="btn docs-tooltip btn-warning btn-xs"><i
                                                                             class="fa fa-eye"></i></a>
-                                                                <?php if ($detalleVenta->getEstado() != "Activo") { ?>
-                                                                    <a href="../../../app/Controllers/ProductosController.php?action=activate&Id=<?php echo $detalleVenta->getId(); ?>"
+                                                                <?php if ($detalleCompra->getEstado() != "Activo") { ?>
+                                                                    <a href="../../../app/Controllers/ProductosController.php?action=activate&Id=<?php echo $detalleCompra->getId(); ?>"
                                                                        type="button" data-toggle="tooltip" title="Activar"
                                                                        class="btn docs-tooltip btn-success btn-xs"><i
                                                                                 class="fa fa-check-square"></i></a>
                                                                 <?php } else { ?>
                                                                     <a type="button"
-                                                                       href="../../../app/Controllers/ProductosController.php?action=inactivate&Id=<?php echo $detalleVenta->getId(); ?>"
+                                                                       href="../../../app/Controllers/ProductosController.php?action=inactivate&Id=<?php echo $detalleCompra->getId(); ?>"
                                                                        data-toggle="tooltip" title="Inactivar"
                                                                        class="btn docs-tooltip btn-danger btn-xs"><i
                                                                                 class="fa fa-times-circle"></i></a>
@@ -262,15 +262,15 @@ use App\Models\DetalleVentas;
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Agregar Producto a Venta</h4>
+                        <h4 class="modal-title">Agregar Producto a Compra</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="../../../app/Controllers/DetalleVentasController.php?action=create" method="post">
+                    <form action="../../../app/Controllers/DetalleComprasController.php?action=create" method="post">
                         <div class="modal-body">
-                            <?php //var_dump($dataVenta); ?>
-                            <input id="ventas_id" name="ventas_id" value="<?= !empty($dataVenta) ? $dataVenta->getId() : ''; ?>" hidden
+                            <?php //var_dump($dataCompra); ?>
+                            <input id="compras_id" name="compras_id" value="<?= !empty($dataCompra) ? $dataCompra->getId() : ''; ?>" hidden
                                    required="required" type="text">
                             <div class="form-group row">
                                 <label for="producto_id" class="col-sm-4 col-form-label">Producto</label>
@@ -285,7 +285,7 @@ use App\Models\DetalleVentas;
                                     ?>
                                     <div id="divResultProducto">
                                         <span class="text-muted">Precio Base: </span> <span id="spPrecio"></span>,
-                                        <span class="text-muted">Precio Venta: </span> <span id="spPrecioVenta"></span>,
+                                        <span class="text-muted">Precio Compra: </span> <span id="spPrecioCompra"></span>,
                                         <span class="text-muted">Stock: </span> <span id="spStock"></span>.
                                     </div>
                                 </div>
@@ -298,9 +298,9 @@ use App\Models\DetalleVentas;
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="precio_venta" class="col-sm-4 col-form-label">Precio Unitario</label>
+                                <label for="precio_compra" class="col-sm-4 col-form-label">Precio Unitario</label>
                                 <div class="col-sm-8">
-                                    <input required readonly type="number" min="1" class="form-control" id="precio_venta" name="precio_venta"
+                                    <input required readonly type="number" min="1" class="form-control" id="precio_compra" name="precio_compra"
                                            placeholder="0.0">
                                 </div>
                             </div>
