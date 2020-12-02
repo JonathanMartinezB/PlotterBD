@@ -51,6 +51,26 @@ CREATE TABLE IF NOT EXISTS `detalle_compras` (
                                                 KEY `fk_detalle_compras_compras1_idx` (`compras_id`),
                                                 KEY `fk_detalle_compras_producto1_idx` (`producto_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table `WebER`.`fotos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `fotos` (
+												`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+												`nombre` VARCHAR(60) NOT NULL,
+												`descripcion` TEXT NOT NULL,
+												`estado` ENUM('Activo', 'Inactivo') NOT NULL,
+												`ruta` VARCHAR(120) NOT NULL,
+												`productos_id` INT(11) UNSIGNED NOT NULL,
+												PRIMARY KEY (`id`),
+												INDEX `fk_fotos_productos1_idx` (`productos_id` ASC),
+												CONSTRAINT `fk_fotos_productos1`
+												FOREIGN KEY (`productos_id`)
+												REFERENCES `WebER`.`productos` (`id`)
+												ON DELETE NO ACTION
+												ON UPDATE NO ACTION)
+ENGINE =InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- --------------------------------------------------------
 
 --
