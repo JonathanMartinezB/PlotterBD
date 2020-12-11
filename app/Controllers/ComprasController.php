@@ -1,227 +1,143 @@
 <?php
 
-namespace App\Controllers;
-require_once(__DIR__.'/../Models/Compras.php');
-require_once(__DIR__.'/../Models/Usuarios.php');
 
+namespace App\Controllers;
+
+require (__DIR__.'/../../vendor/autoload.php');
 use App\Models\GeneralFunctions;
-use App\Models\Usuarios;
 use App\Models\Compras;
 use Carbon\Carbon;
 
-if(!empty($_GET['action'])){
-    ComprasController::main($_GET['action']);
-}
-
 class ComprasController{
 
-    static function main($action)
+    private array $dataCompra;
+
+    public function __construct(array $_FORM)
     {
-        if ($action == "create") {
-            ComprasController::create();
-        } else if ($action == "edit") {
-            ComprasController::edit();
-        } else if ($action == "searchForID") {
-            ComprasController::searchForID($_REQUEST['idCompra']);
-        } else if ($action == "searchAll") {
-            ComprasController::getAll();
-        } else if ($action == "activate") {
-            ComprasController::activate();
-        } else if ($action == "inactivate") {
-            ComprasController::inactivate();
-        }
+        $this->dataCompra = array();
+        $this->dataCompra['id'] = $_FORM['id'] ?? NULL;
+        $this->dataCompra['numero_serie'] = $_FORM['numero_serie'] ?? '';
+        $this->dataCompra['cliente_id'] = $_FORM['cliente_id'] ?? 0;
+        $this->dataCompra['empleado_id'] = $_FORM['empleado_id'] ?? 0;
+        $this->dataCompra['fecha_compra'] = !empty($_FORM['fecha_compra']) ? Carbon::parse($_FORM['fecha_compra']) : new Carbon();
+        $this->dataCompra['monto'] = $_FORM['monto'] ?? 0;
+        $this->dataCompra['estado'] = $_FORM['estado'] ?? 'En progreso';
     }
 
-    static public function create()
-    {
+    public function create() {
         try {
-            $arrayCompra = array();
-            $arrayCompra['numero_serie'] = 'FV'.'-'.date('Y-m-d');
-            $arrayCompra['cliente_id'] = Usuarios::searchForId($_POST['cliente_id']);
-            $arrayCompra['empleado_id'] = Usuarios::searchForId($_POST['empleado_id']);
-            $arrayCompra['fecha_compra'] = Carbon::now(); //Fecha Completa Hoy
-            $arrayCompra['monto'] = 0;
-            $arrayCompra['estado'] = 'Activo';
-            $Compra = new Compras($arrayCompra);
-            if($Compra->create()){
-                header("Location: ../../views/modules/compras/create.php?id=".$Compra->getId());
+            $Compra = new Compras($this->dataCompra);
+            if ($Compra->insert()) {
+                unset($_SESSION['frmCompras']);
+                $Compra->Connect();
+                $id = $Compra->getLastId('compras');
+                $Compra->Disconnect();
+                header("Location: ../../views/modules/compras/create.php?id=" . $id . "");
             }
         } catch (\Exception $e) {
-            GeneralFunctions::console( $e, 'error', 'errorStack');
-            header("Location: ../../views/modules/compras/create.php?respuesta=error&mensaje=" . $e->getMessage());
+            GeneralFunctions::logFile('Exception',$e, 'error');
+            //header("Location: ../../views/modules/compras/create.php?respuesta=error");
         }
     }
 
-    static public function edit (){
+    public function edit()
+    {
         try {
-            $arrayCompra = array();
-            $arrayCompra['numero_serie'] = $_POST['numero_serie'];
-            $arrayCompra['cliente_id'] = Usuarios::searchForId($_POST['cliente_id']);
-            $arrayCompra['empleado_id'] = Usuarios::searchForId($_POST['empleado_id']);
-            $arrayCompra['fecha_compra'] = $_POST['fecha_compra'];
-            $arrayCompra['monto'] = $_POST['monto'];
-            $arrayCompra['estado'] = $_POST['estado'];
-            $arrayCompra['id'] = $_POST['id'];
-
-            $Compra = new Compras ($arrayCompra);
-            $Compra->update();
-
-            header("Location: ../../views/modules/compras/show.php?id=".$Compra->getId()."&respuesta=correcto");
+            $Compra = new Compras($this->dataCompra);
+            if($Compra->update()){
+                unset($_SESSION['frmCompras']);
+            }
+            header("Location: ../../views/modules/compras/show.php?id=" . $Compra->getId() . "&respuesta=success&mensaje=Compra Actualizada");
         } catch (\Exception $e) {
-            GeneralFunctions::console( $e, 'error', 'errorStack');
-            header("Location: ../../views/modules/compras/edit.php?respuesta=error&mensaje=".$e->getMessage());
+            GeneralFunctions::logFile('Exception',$e, 'error');
+            //header("Location: ../../views/modules/compras/edit.php?respuesta=error");
         }
     }
 
-    static public function activate (){
+    static public function searchForID (array $data){
+        try {
+            $result = Compras::searchForId($data['id']);
+            if (!empty($data['request']) and $data['request'] === 'ajax' and !empty($result)) {
+                header('Content-type: application/json; charset=utf-8');
+                $result = json_encode($result->jsonSerialize());
+            }
+            return $result;
+        } catch (\Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
+        }
+        return null;
+    }
+
+    static public function getAll (array $data = null){
+        try {
+            $result = Compras::getAll();
+            if (!empty($data['request']) and $data['request'] === 'ajax') {
+                header('Content-type: application/json; charset=utf-8');
+                $result = json_encode($result);
+            }
+            return $result;
+        } catch (\Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
+        }
+        return null;
+    }
+
+    static public function cancel(){
         try {
             $ObjCompra = Compras::searchForId($_GET['Id']);
-            $ObjCompra->setEstado("Activo");
+            $ObjCompra->setEstado("Cancelada");
             if($ObjCompra->update()){
                 header("Location: ../../views/modules/compras/index.php");
             }else{
                 header("Location: ../../views/modules/compras/index.php?respuesta=error&mensaje=Error al guardar");
             }
         } catch (\Exception $e) {
-            GeneralFunctions::console( $e, 'error', 'errorStack');
-            header("Location: ../../views/modules/compras/index.php?respuesta=error&mensaje=".$e->getMessage());
-        }
-    }
-
-    static public function inactivate (){
-        try {
-            $ObjCompra = Compras::searchForId($_GET['Id']);
-            $ObjCompra->setEstado("Inactivo");
-            if($ObjCompra->update()){
-                header("Location: ../../views/modules/compras/index.php");
-            }else{
-                header("Location: ../../views/modules/compras/index.php?respuesta=error&mensaje=Error al guardar");
-            }
-        } catch (\Exception $e) {
-            GeneralFunctions::console( $e, 'error', 'errorStack');
+            GeneralFunctions::logFile('Exception',$e, 'error');
             header("Location: ../../views/modules/compras/index.php?respuesta=error");
         }
     }
 
-    static public function searchForID ($id){
-        try {
-            return Compras::searchForId($id);
-        } catch (\Exception $e) {
-            GeneralFunctions::console( $e, 'error', 'errorStack');
-            //header("Location: ../../views/modules/compras/manager.php?respuesta=error");
+    static public function selectCompras (array $params = [] ){
+
+        $params['isMultiple'] = $params['isMultiple'] ?? false;
+        $params['isRequired'] = $params['isRequired'] ?? true;
+        $params['id'] = $params['id'] ?? "venta_id";
+        $params['name'] = $params['name'] ?? "venta_id";
+        $params['defaultValue'] = $params['defaultValue'] ?? "";
+        $params['class'] = $params['class'] ?? "form-control";
+        $params['where'] = $params['where'] ?? "";
+        $params['arrExcluir'] = $params['arrExcluir'] ?? array();
+        $params['request'] = $params['request'] ?? 'html';
+
+        $arrCompras = array();
+        if($params['where'] != ""){
+            $base = "SELECT * FROM compras WHERE ";
+            $arrCompras = Compras::search($base.$params['where']);
+        }else{
+            $arrCompras = Compras::getAll();
         }
+
+        $htmlSelect = "<select ".(($params['isMultiple']) ? "multiple" : "")." ".(($params['isRequired']) ? "required" : "")." id= '".$params['id']."' name='".$params['name']."' class='".$params['class']."'>";
+        $htmlSelect .= "<option value='' >Seleccione</option>";
+        if(count($arrCompras) > 0){
+            /* @var $arrCompras Compras[] */
+            foreach ($arrCompras as $compras)
+                if (!ComprasController::compraIsInArray($compras->getId(),$params['arrExcluir']))
+                    $htmlSelect .= "<option ".(($compras != "") ? (($params['defaultValue'] == $compras->getId()) ? "selected" : "" ) : "")." value='".$compras->getId()."'>".$compras->getNumeroSerie()."</option>";
+        }
+        $htmlSelect .= "</select>";
+        return $htmlSelect;
     }
 
-    static public function getAll (){
-        try {
-            return Compras::getAll();
-        } catch (\Exception $e) {
-            GeneralFunctions::console( $e, 'log', 'errorStack');
-            header("Location: ../Vista/modules/persona/manager.php?respuesta=error");
-        }
-    }
-
-    /*public static function personaIsInArray($idPersona, $ArrPersonas){
-        if(count($ArrPersonas) > 0){
-            foreach ($ArrPersonas as $Persona){
-                if($Persona->getIdPersona() == $idPersona){
+    public static function ventaIsInArray($idCompra, $ArrCompras){
+        if(count($ArrCompras) > 0){
+            foreach ($ArrCompras as $Compra){
+                if($Compra->getId() == $idCompra){
                     return true;
                 }
             }
         }
         return false;
     }
-
-    static public function selectPersona ($isMultiple=false,
-                                          $isRequired=true,
-                                          $id="idConsultorio",
-                                          $nombre="idConsultorio",
-                                          $defaultValue="",
-                                          $class="",
-                                          $where="",
-                                          $arrExcluir = array()){
-        $arrPersonas = array();
-        if($where != ""){
-            $base = "SELECT * FROM persona WHERE ";
-            $arrPersonas = Persona::buscar($base.$where);
-        }else{
-            $arrPersonas = Persona::getAll();
-        }
-
-        $htmlSelect = "<select ".(($isMultiple) ? "multiple" : "")." ".(($isRequired) ? "required" : "")." id= '".$id."' name='".$nombre."' class='".$class."'>";
-        $htmlSelect .= "<option value='' >Seleccione</option>";
-        if(count($arrPersonas) > 0){
-            foreach ($arrPersonas as $persona)
-                if (!UsuariosController::personaIsInArray($persona->getIdPersona(),$arrExcluir))
-                    $htmlSelect .= "<option ".(($persona != "") ? (($defaultValue == $persona->getIdPersona()) ? "selected" : "" ) : "")." value='".$persona->getIdPersona()."'>".$persona->getNombres()." ".$persona->getApellidos()."</option>";
-        }
-        $htmlSelect .= "</select>";
-        return $htmlSelect;
-    }*/
-
-    /*
-    public function buscar ($Query){
-        try {
-            return Persona::buscar($Query);
-        } catch (Exception $e) {
-            header("Location: ../Vista/modules/persona/manager.php?respuesta=error");
-        }
-    }
-
-    static public function asociarEspecialidad (){
-        try {
-            $Persona = new Persona();
-            $Persona->asociarEspecialidad($_POST['Persona'],$_POST['Especialidad']);
-            header("Location: ../Vista/modules/persona/managerSpeciality.php?respuesta=correcto&id=".$_POST['Persona']);
-        } catch (Exception $e) {
-            header("Location: ../Vista/modules/persona/managerSpeciality.php?respuesta=error&mensaje=".$e->getMessage());
-        }
-    }
-
-    static public function eliminarEspecialidad (){
-        try {
-            $ObjPersona = new Persona();
-            if(!empty($_GET['Persona']) && !empty($_GET['Especialidad'])){
-                $ObjPersona->eliminarEspecialidad($_GET['Persona'],$_GET['Especialidad']);
-            }else{
-                throw new Exception('No se recibio la informacion necesaria.');
-            }
-            header("Location: ../Vista/modules/persona/managerSpeciality.php?id=".$_GET['Persona']);
-        } catch (Exception $e) {
-            var_dump($e);
-            //header("Location: ../Vista/modules/persona/manager.php?respuesta=error");
-        }
-    }
-
-    public static function login (){
-        try {
-            if(!empty($_POST['Usuario']) && !empty($_POST['Contrasena'])){
-                $tmpPerson = new Persona();
-                $respuesta = $tmpPerson->Login($_POST['Usuario'], $_POST['Contrasena']);
-                if (is_a($respuesta,"Persona")) {
-                    $hydrator = new ReflectionHydrator(); //Instancia de la clase para convertir objetos
-                    $ArrDataPersona = $hydrator->extract($respuesta); //Convertimos el objeto persona en un array
-                    unset($ArrDataPersona["datab"],$ArrDataPersona["isConnected"],$ArrDataPersona["relEspecialidades"]); //Limpiamos Campos no Necesarios
-                    $_SESSION['UserInSession'] = $ArrDataPersona;
-                    echo json_encode(array('type' => 'success', 'title' => 'Ingreso Correcto', 'text' => 'Sera redireccionado en un momento...'));
-                }else{
-                    echo json_encode(array('type' => 'error', 'title' => 'Error al ingresar', 'text' => $respuesta)); //Si la llamda es por Ajax
-                }
-                return $respuesta; //Si la llamada es por funcion
-            }else{
-                echo json_encode(array('type' => 'error', 'title' => 'Datos Vacios', 'text' => 'Debe ingresar la informacion del usuario y contraseña'));
-                return "Datos Vacios"; //Si la llamada es por funcion
-            }
-        } catch (Exception $e) {
-            var_dump($e);
-            header("Location: ../login.php?respuesta=error");
-        }
-    }
-
-    public static function cerrarSession (){
-        session_unset();
-        session_destroy();
-        header("Location: ../Vista/modules/persona/login.php");
-    }*/
 
 }
