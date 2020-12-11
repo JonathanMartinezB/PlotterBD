@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use App\Models\Interfaces\Model;
@@ -7,24 +8,20 @@ use Carbon\Carbon;
 use Exception;
 use JsonSerializable;
 
-class Productos extends AbstractDBConnection implements Model, JsonSerializable
+class Categorias extends AbstractDBConnection implements Model, JsonSerializable
 {
     private ?int $id;
     private string $nombre;
-    private float $precio;
-    private float $porcentaje_ganancia;
-    private int $stock;
-    private int $categoria_id;
+    private string $descripcion;
     private string $estado;
     private Carbon $created_at;
     private Carbon $updated_at;
 
     /* Relaciones */
-    private ?Categorias $categoria;
-    private ?array $fotosProducto;
+    private ?array $productosCategoria;
 
     /**
-     * Producto constructor. Recibe un array asociativo
+     * Categorias constructor. Recibe un array asociativo
      * @param array $categoria
      */
     public function __construct(array $categoria = [])
@@ -32,10 +29,7 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
         parent::__construct();
         $this->setId($categoria['id'] ?? NULL);
         $this->setNombre($categoria['nombre'] ?? '');
-        $this->setPrecio($categoria['precio'] ?? 0.0);
-        $this->setPorcentajeGanancia($categoria['porcentaje_ganancia'] ?? 0.0);
-        $this->setStock($categoria['stock'] ?? 0);
-        $this->setCategoriaId($categoria['categoria_id'] ?? 0);
+        $this->setDescripcion($categoria['descripcion'] ?? '');
         $this->setEstado($categoria['estado'] ?? '');
         $this->setCreatedAt(!empty($categoria['created_at']) ? Carbon::parse($categoria['created_at']) : new Carbon());
         $this->setUpdatedAt(!empty($categoria['updated_at']) ? Carbon::parse($categoria['updated_at']) : new Carbon());
@@ -81,67 +75,19 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
     }
 
     /**
-     * @return float|mixed
+     * @return string|mixed
      */
-    public function getPrecio() : float
+    public function getDescripcion() : string
     {
-        return $this->precio;
+        return $this->descripcion;
     }
 
     /**
-     * @param float|mixed $precio
+     * @param string|mixed $descripcion
      */
-    public function setPrecio(float $precio): void
+    public function setDescripcion(string $descripcion): void
     {
-        $this->precio = $precio;
-    }
-
-    /**
-     * @return float|mixed
-     */
-    public function getPorcentajeGanancia() : float
-    {
-        return $this->porcentaje_ganancia;
-    }
-
-    /**
-     * @param float|mixed $porcentaje_ganancia
-     */
-    public function setPorcentajeGanancia(float $porcentaje_ganancia): void
-    {
-        $this->porcentaje_ganancia = $porcentaje_ganancia;
-    }
-
-    /**
-     * @return int|mixed
-     */
-    public function getStock() : int
-    {
-        return $this->stock;
-    }
-
-    /**
-     * @param int|mixed $stock
-     */
-    public function setStock(int $stock): void
-    {
-        $this->stock = $stock;
-    }
-
-    /**
-     * @return int
-     */
-    public function getCategoriaId(): int
-    {
-        return $this->categoria_id;
-    }
-
-    /**
-     * @param int $categoria_id
-     */
-    public function setCategoriaId(int $categoria_id): void
-    {
-        $this->categoria_id = $categoria_id;
+        $this->descripcion = $descripcion;
     }
 
     /**
@@ -173,7 +119,7 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
      */
     public function setCreatedAt(Carbon $created_at): void
     {
-        $this->created_at = $created_at;
+        $this->created_at = $created_at->locale('es');
     }
 
     /**
@@ -194,36 +140,25 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
 
     /* Relaciones */
     /**
-     * @return Categorias
+     * retorna un array de productos que pertenecen a una categoria
+     * @return array
      */
-    public function getCategoria(): ?Categorias
+    public function getProductosCategoria(): ?array
     {
-        if(!empty($this->categoria_id)){
-            $this->categoria = Categorias::searchForId($this->categoria_id) ?? new Categorias();
-            return $this->categoria;
-        }
-        return NULL;
+        $this->productosCategoria = Productos::search("SELECT * FROM plotter.productos WHERE categoria_id = ".$this->id." and estado = 'Activo'");
+        return $this->productosCategoria;
     }
 
     /**
-     * retorna un array de fotos que pertenecen al producto
-     * @return array
+     * @param string $query
+     * @return bool|null
      */
-    public function getFotosProducto(): ?array
-    {
-        $this->fotosProducto = Fotos::search("SELECT * FROM plotter.fotos WHERE producto_id = ".$this->id." and estado = 'Activo'");
-        return $this->fotosProducto;
-    }
-
     protected function save(string $query): ?bool
     {
         $arrData = [
             ':id' =>    $this->getId(),
             ':nombre' =>   $this->getNombre(),
-            ':precio' =>   $this->getPrecio(),
-            ':porcentaje_ganancia' =>  $this->getPorcentajeGanancia(),
-            ':stock' =>   $this->getStock(),
-            ':categoria_id' =>   $this->getCategoriaId(),
+            ':descripcion' =>   $this->getDescripcion(),
             ':estado' =>   $this->getEstado(),
             ':created_at' =>  $this->getCreatedAt()->toDateTimeString(), //YYYY-MM-DD HH:MM:SS
             ':updated_at' =>  $this->getUpdatedAt()->toDateTimeString() //YYYY-MM-DD HH:MM:SS
@@ -239,7 +174,7 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
      */
     function insert(): ?bool
     {
-        $query = "INSERT INTO plotter.productos VALUES (:id,:nombre,:precio,:porcentaje_ganancia,:stock,:categoria_id,:estado,:created_at,:updated_at)";
+        $query = "INSERT INTO plotter.categorias VALUES (:id,:nombre,:descripcion,:estado,:created_at,:updated_at)";
         return $this->save($query);
     }
 
@@ -248,9 +183,9 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
      */
     public function update(): ?bool
     {
-        $query = "UPDATE plotter.productos SET 
-            nombre = :nombre, precio = :precio, porcentaje_ganancia = :porcentaje_ganancia, 
-            stock = :stock, categoria_id = :categoria_id, estado = :estado, created_at = :created_at, 
+        $query = "UPDATE plotter.categorias SET 
+            nombre = :nombre, descripcion = :descripcion,
+            estado = :estado, created_at = :created_at, 
             updated_at = :updated_at WHERE id = :id";
         return $this->save($query);
     }
@@ -267,24 +202,24 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
 
     /**
      * @param $query
-     * @return Productos|array
+     * @return Categorias|array
      * @throws Exception
      */
     public static function search($query) : ?array
     {
         try {
-            $arrProductos = array();
-            $tmp = new Productos();
+            $arrCategorias = array();
+            $tmp = new Categorias();
             $tmp->Connect();
             $getrows = $tmp->getRows($query);
             $tmp->Disconnect();
 
             foreach ($getrows as $valor) {
-                $Producto = new Productos($valor);
-                array_push($arrProductos, $Producto);
-                unset($Producto);
+                $Categoria = new Categorias($valor);
+                array_push($arrCategorias, $Categoria);
+                unset($Categoria);
             }
-            return $arrProductos;
+            return $arrCategorias;
         } catch (Exception $e) {
             GeneralFunctions::logFile('Exception',$e, 'error');
         }
@@ -293,20 +228,20 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
 
     /**
      * @param $id
-     * @return Productos
+     * @return Categorias
      * @throws Exception
      */
-    public static function searchForId($id) : ?Productos
+    public static function searchForId($id) : ?Categorias
     {
         try {
             if ($id > 0) {
-                $Producto = new Productos();
-                $Producto->Connect();
-                $getrow = $Producto->getRow("SELECT * FROM plotter.productos WHERE id =?", array($id));
-                $Producto->Disconnect();
-                return ($getrow) ? new Productos($getrow) : null;
+                $Categoria = new Categorias();
+                $Categoria->Connect();
+                $getrow = $Categoria->getRow("SELECT * FROM plotter.categorias WHERE id =?", array($id));
+                $Categoria->Disconnect();
+                return ($getrow) ? new Categorias($getrow) : null;
             }else{
-                throw new Exception('Id de producto Invalido');
+                throw new Exception('Id de categoria Invalido');
             }
         } catch (Exception $e) {
             GeneralFunctions::logFile('Exception',$e, 'error');
@@ -320,7 +255,7 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
      */
     public static function getAll() : ?array
     {
-        return Productos::search("SELECT * FROM plotter.productos");
+        return Categorias::search("SELECT * FROM plotter.categorias");
     }
 
     /**
@@ -328,10 +263,10 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
      * @return bool
      * @throws Exception
      */
-    public static function productoRegistrado($nombre): bool
+    public static function categoriaRegistrada($nombre): bool
     {
         $nombre = trim(strtolower($nombre));
-        $result = Productos::search("SELECT id FROM plotter.productos where nombre = '" . $nombre. "'");
+        $result = Categorias::search("SELECT id FROM plotter.categorias where nombre = '" . $nombre. "'");
         if ( !empty($result) && count ($result) > 0 ) {
             return true;
         } else {
@@ -340,40 +275,13 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
     }
 
     /**
-     * @return float|mixed
-     */
-    public function getPrecioVenta() : float
-    {
-        return $this->precio + ($this->precio * ($this->porcentaje_ganancia / 100));
-    }
-
-    /**
      * @return string
      */
     public function __toString() : string
     {
-        return "Nombre: $this->nombre, Precio: $this->precio, Porcentaje: $this->porcentaje_ganancia, Stock: $this->stock, Estado: $this->estado";
+        return "Nombre: $this->nombre, Descripción: $this->descripcion, Estado: $this->estado";
     }
 
-    public function substractStock(int $quantity)
-    {
-        $this->setStock( $this->getStock() - $quantity);
-        $result = $this->update();
-        if($result == false){
-            GeneralFunctions::console('Stock no actualizado!');
-        }
-        return $result;
-    }
-
-    public function addStock(int $quantity)
-    {
-        $this->setStock( $this->getStock() + $quantity);
-        $result = $this->update();
-        if($result == false){
-            GeneralFunctions::console('Stock no actualizado!');
-        }
-        return $result;
-    }
 
     /**
      * Specify data which should be serialized to JSON
@@ -386,12 +294,10 @@ class Productos extends AbstractDBConnection implements Model, JsonSerializable
     {
         return [
             'nombre' => $this->getNombre(),
-            'precio' => $this->getPrecio(),
-            'porcentaje_ganancias' => $this->getPorcentajeGanancia(),
-            'precio_venta' => $this->getPrecioVenta(),
-            'stock' => $this->getStock(),
-            'categoria' => $this->getCategoria()->jsonSerialize(),
+            'descripcion' => $this->getDescripcion(),
             'estado' => $this->getEstado(),
+            'created_at' => $this->getCreatedAt()->toDateTimeString(),
+            'updated_at' => $this->getUpdatedAt()->toDateTimeString(),
         ];
     }
 }

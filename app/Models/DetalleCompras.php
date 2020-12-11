@@ -2,35 +2,37 @@
 
 namespace App\Models;
 
-use App\Controllers\DetalleComprasController;
+use App\Interfaces\Model;
+use Carbon\Carbon;
+use Exception;
+use JsonSerializable;
 
-require_once (__DIR__ .'/../../vendor/autoload.php');
-require_once('BasicModel.php');
-
-class DetalleCompras extends BasicModel
+class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializable
 {
-    private int $id;
-    private Compras $compras_id;
-    private Productos $producto_id;
+    private ?int $id;
+    private int $compras_id;
+    private int $producto_id;
     private int $cantidad;
     private float $precio_compra;
+    private Carbon $created_at;
+
+    /* Relaciones */
+    private ?Compras $compra;
+    private ?Productos $producto;
 
     /**
-     * DetalleCompras constructor.
-     * @param int $id
-     * @param Compras $compras_id
-     * @param Productos $producto_id
-     * @param int $cantidad
-     * @param float $precio_compra
+     * Detalle Compra constructor. Recibe un array asociativo
+     * @param array $detalle_compra
      */
-    public function __construct($compra = array())
+    public function __construct(array $detalle_compra = [])
     {
         parent::__construct();
-        $this->id = $compra['id'] ?? 0;
-        $this->compras_id = $compra['compras_id'] ?? new Compras();
-        $this->producto_id = $compra['producto_id'] ?? new Productos();
-        $this->cantidad = $compra['cantidad'] ?? 0;
-        $this->precio_compra = $compra['precio_compra'] ?? 0.0;
+        $this->setId($detalle_compra['id'] ?? NULL);
+        $this->setComprasId($detalle_compra['compra_id'] ?? 0);
+        $this->setProductoId($detalle_compra['producto_id'] ?? 0);
+        $this->setCantidad($detalle_compra['cantidad'] ?? 0);
+        $this->setPrecioCompra($detalle_compra['precio_compra'] ?? 0.0);
+        $this->setCreatedAt(!empty($categoria['created_at']) ? Carbon::parse($categoria['created_at']) : new Carbon());
     }
 
     /**
@@ -42,49 +44,49 @@ class DetalleCompras extends BasicModel
     }
 
     /**
-     * @return int|mixed
+     * @return int|null
      */
-    public function getId() : int
+    public function getId(): ?int
     {
         return $this->id;
     }
 
     /**
-     * @param int|mixed $id
+     * @param int|null $id
      */
-    public function setId(int $id): void
+    public function setId(?int $id): void
     {
         $this->id = $id;
     }
 
     /**
-     * @return Compras|mixed
+     * @return int|mixed
      */
-    public function getComprasId() : Compras
+    public function getComprasId() : int
     {
         return $this->compras_id;
     }
 
     /**
-     * @param Compras|mixed $compras_id
+     * @param int|mixed $compras_id
      */
-    public function setComprasId(Compras $compras_id): void
+    public function setComprasId(int $compras_id): void
     {
         $this->compras_id = $compras_id;
     }
 
     /**
-     * @return Productos
+     * @return int
      */
-    public function getProductoId(): Productos
+    public function getProductoId(): int
     {
         return $this->producto_id;
     }
 
     /**
-     * @param Productos $producto_id
+     * @param int $producto_id
      */
-    public function setProductoId(Productos $producto_id): void
+    public function setProductoId(int $producto_id): void
     {
         $this->producto_id = $producto_id;
     }
@@ -121,21 +123,82 @@ class DetalleCompras extends BasicModel
         $this->precio_compra = $precio_compra;
     }
 
+    public function getTotalProducto() : float
+    {
+        return $this->getPrecioCompra() * $this->getCantidad();
+    }
 
     /**
-     * @return mixed
+     * @return Carbon
      */
-    public function create() : bool
+    public function getCreatedAt(): Carbon
     {
-        $result = $this->insertRow("INSERT INTO plotter.detalle_compras VALUES (NULL, ?, ?, ?, ?)", array(
-                $this->compras_id->getId(),
-                $this->producto_id->getId(),
-                $this->cantidad,
-                $this->precio_compra
-            )
-        );
+        return $this->created_at;
+    }
+
+    /**
+     * @param Carbon $created_at
+     */
+    public function setCreatedAt(Carbon $created_at): void
+    {
+        $this->created_at = $created_at;
+    }
+
+    /* Relaciones */
+    /**
+     * Retorna el objeto compra correspondiente al detalle compra
+     * @return Compras|null
+     */
+    public function getCompra(): ?Compras
+    {
+        if(!empty($this->compras_id)){
+            $this->compra = Compras::searchForId($this->compras_id) ?? new Compras();
+            return $this->compra;
+        }
+        return NULL;
+    }
+
+    /**
+     * Retorna el objeto producto correspondiente al detalle compra
+     * @return Productos|null
+     */
+    public function getProducto(): ?Productos
+    {
+        if(!empty($this->producto_id)){
+            $this->producto = Productos::searchForId($this->producto_id) ?? new Productos();
+            return $this->producto;
+        }
+        return NULL;
+    }
+
+    protected function save(string $query, string $type = 'insert'): ?bool
+    {
+        if($type == 'deleted'){
+            $arrData = [ ':id' =>   $this->getId() ];
+        }else{
+            $arrData = [
+                ':id' =>   $this->getId(),
+                ':compra_id' =>   $this->getComprasId(),
+                ':producto_id' =>  $this->getProductoId(),
+                ':cantidad' =>   $this->getCantidad(),
+                ':precio_compra' =>   $this->getPrecioCompra(),
+                ':created_at' =>  $this->getCreatedAt()->toDateTimeString(), //YYYY-MM-DD HH:MM:SS
+            ];
+        }
+
+        $this->Connect();
+        $result = $this->insertRow($query, $arrData);
         $this->Disconnect();
         return $result;
+    }
+
+    function insert()
+    {
+        $query = "INSERT INTO plotter.detalle_compras VALUES (:id,:compra_id,:producto_id,:cantidad,:precio_compra,:created_at)";
+        if($this->save($query)){
+            return $this->getProducto()->substractStock($this->getCantidad());
+        }
+        return false;
     }
 
     /**
@@ -143,74 +206,66 @@ class DetalleCompras extends BasicModel
      */
     public function update() : bool
     {
-        $result = $this->updateRow("UPDATE plotter.detalle_compras SET compras_id = ?, producto_id = ?, cantidad = ?, precio_compra = ? WHERE id = ?", array(
-                $this->compras_id->getId(),
-                $this->producto_id->getId(),
-                $this->cantidad,
-                $this->precio_compra,
-                $this->id
-            )
-        );
-        $this->Disconnect();
-        return $result;
+        $query = "UPDATE plotter.detalle_compras SET 
+            compra_id = :compra_id, producto_id = :producto_id, cantidad = :cantidad, 
+            precio_compra = :precio_compra, created_at = :created_at WHERE id = :id";
+        return $this->save($query);
     }
 
     /**
-     * @param $id
      * @return mixed
      */
-    public function deleted($id) : bool
+    public function deleted() : bool
     {
-        $DetalleCompra = DetalleCompras::searchForId($id); //Buscando un usuario por el ID
-        $deleterow = $DetalleCompra->deleteRow("DELETE FROM detalle_compras WHERE id = ?", array($id));
-        return $deleterow;                    //Guarda los cambios..
+        $query = "DELETE FROM detalle_compras WHERE id = :id";
+        return $this->save($query, 'deleted');
     }
 
     /**
      * @param $query
      * @return mixed
      */
-    public static function search($query) : array
+    public static function search($query) : ?array
     {
-        $arrDetalleCompra = array();
-        $tmp = new DetalleCompras();
-        $getrows = $tmp->getRows($query);
+        try {
+            $arrDetalleCompra = array();
+            $tmp = new DetalleCompras();
+            $tmp->Connect();
+            $getrows = $tmp->getRows($query);
+            $tmp->Disconnect();
 
-        foreach ($getrows as $valor) {
-            $DetalleCompra = new DetalleCompras();
-            $DetalleCompra->id = $valor['id'];
-            $DetalleCompra->compras_id = Compras::searchForId($valor['compras_id']);
-            $DetalleCompra->producto_id = Productos::searchForId($valor['producto_id']);
-            $DetalleCompra->cantidad = $valor['cantidad'];
-            $DetalleCompra->precio_compra = $valor['precio_compra'];
-            $DetalleCompra->Disconnect();
-            if(count($getrows) == 1){ // Si solamente hay un registro encontrado devuelve este objeto y no un array
-                return $DetalleCompra;
+            foreach ($getrows as $valor) {
+                $DetalleCompra = new DetalleCompras($valor);
+                array_push($arrDetalleCompra, $DetalleCompra);
+                unset($DetalleCompra);
             }
-            array_push($arrDetalleCompra, $DetalleCompra);
+            return $arrDetalleCompra;
+        } catch (Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
         }
-        $tmp->Disconnect();
-        return $arrDetalleCompra;
+        return NULL;
     }
 
     /**
      * @param $id
      * @return mixed
      */
-    public static function searchForId($id) : DetalleCompras
+    public static function searchForId($id) : ?DetalleCompras
     {
-        $DetalleCompra = null;
-        if ($id > 0) {
-            $DetalleCompra = new DetalleCompras;
-            $getrow = $DetalleCompra->getRow("SELECT * FROM plotter.detalle_compras WHERE id =?", array($id));
-            $DetalleCompra->id = $getrow['id'];
-            $DetalleCompra->compras_id = Compras::searchForId($getrow['compras_id']);
-            $DetalleCompra->producto_id = Productos::searchForId($getrow['producto_id']);
-            $DetalleCompra->cantidad = $getrow['cantidad'];
-            $DetalleCompra->precio_compra= $getrow['precio_compra'];
+        try {
+            if ($id > 0) {
+                $DetalleCompra = new DetalleCompras();
+                $DetalleCompra->Connect();
+                $getrow = $DetalleCompra->getRow("SELECT * FROM plotter.detalle_compras WHERE id = ?", array($id));
+                $DetalleCompra->Disconnect();
+                return ($getrow) ? new DetalleCompras($getrow) : null;
+            }else{
+                throw new Exception('Id de detalle compra Invalido');
+            }
+        } catch (Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
         }
-        $DetalleCompra->Disconnect();
-        return $DetalleCompra;
+        return NULL;
     }
 
     /**
@@ -222,12 +277,13 @@ class DetalleCompras extends BasicModel
     }
 
     /**
-     * @param $nombres
+     * @param $compra_id
+     * @param $producto_id
      * @return bool
      */
-    public static function productoEnFactura($producto_id): bool
+    public static function productoEnFactura($compra_id,$producto_id): bool
     {
-        $result = DetalleCompras::search("SELECT id FROM plotter.detalle_compras where producto_id = '" . $producto_id. "'");
+        $result = DetalleCompras::search("SELECT id FROM plotter.detalle_compras where compra_id = '" . $compra_id. "' and producto_id = '" . $producto_id. "'");
         if (count($result) > 0) {
             return true;
         } else {
@@ -240,6 +296,24 @@ class DetalleCompras extends BasicModel
      */
     public function __toString() : string
     {
-        return "Compra: $this->compras_id->getNumeroSerie(), Producto: $this->producto_id->getNombres(), Cantidad: $this->cantidad, Precio Compra: $this->precio_compra";
+        return "Compra: ".$this->compra->getNumeroSerie().", Producto: ".$this->producto->getNombre().", Cantidad: $this->cantidad, Precio Compra: $this->precio_compra";
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'compra_id' => $this->getCompra()->jsonSerialize(),
+            'producto_id' => $this->getProducto()->jsonSerialize(),
+            'cantidad' => $this->getCantidad(),
+            'precio_compra' => $this->getPrecioCompra(),
+            'created_at' => $this->getCreatedAt()->toDateTimeString(),
+        ];
     }
 }

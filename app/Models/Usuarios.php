@@ -1,86 +1,80 @@
 <?php
-
 namespace App\Models;
 
-require_once (__DIR__ .'/../../vendor/autoload.php');
-require_once('BasicModel.php');
-
+use App\Models\Interfaces\Model;
 use Carbon\Carbon;
+use Exception;
 use JsonSerializable;
 
-class Usuarios extends BasicModel implements JsonSerializable
+class Usuarios extends AbstractDBConnection implements Model, JsonSerializable
 {
     /* Tipos de Datos => bool, int, float,  */
-    private int $id;
+    private ?int $id;
     private string $nombres;
     private string $apellidos;
     private string $tipo_documento;
     private int $documento;
     private int $telefono;
     private string $direccion;
+    private int $municipio_id;
     private ?string $user;
     private ?string $password;
+    private ?string $foto;
     private string $rol;
     private string $estado;
     private Carbon $fecha_registro;
+    private Carbon $created_at;
+    private Carbon $updated_at;
 
     /* Relaciones */
-    private $VentasCliente;
-    private $VentasEmpleado;
+    private ?Municipios $municipio;
+    private ?array $ventasCliente;
+    private ?array $ventasEmpleado;
 
     /**
-     * Usuarios constructor.
-     * @param int $id
-     * @param string $nombres
-     * @param string $apellidos
-     * @param string $tipo_documento
-     * @param int $documento
-     * @param int $telefono
-     * @param string $direccion
-     * @param string $user
-     * @param string $password
-     * @param string $rol
-     * @param string $estado
-     * @param Carbon $fecha_registro
+     * Usuarios constructor. Recibe un array asociativo
+     * @param array $usuario
      */
-    public function __construct($usuario = array())
+    public function __construct(array $usuario = [])
     {
-        parent::__construct(); //Llama al contructor padre "la clase conexion" para conectarme a la BD
-        $this->id = $usuario['id'] ?? 0;
-        $this->nombres = $usuario['nombres'] ?? '';
-        $this->apellidos = $usuario['apellidos'] ?? '';
-        $this->tipo_documento = $usuario['tipo_documento'] ?? '';
-        $this->documento = $usuario['documento'] ?? 0;
-        $this->telefono = $usuario['telefono'] ?? 0;
-        $this->direccion = $usuario['direccion'] ?? '';
-        $this->user = $usuario['user'] ?? null;
-        $this->password = $usuario['password'] ?? null;
-        $this->rol = $usuario['rol'] ?? '';
-        $this->estado = $usuario['estado'] ?? '';
-        $this->fecha_registro = $usuario['fecha_creacion'] ?? new Carbon();
+        parent::__construct();
+        $this->setId($usuario['id'] ?? NULL);
+        $this->setNombres($usuario['nombres'] ?? '');
+        $this->setApellidos($usuario['apellidos'] ?? '');
+        $this->setTipoDocumento($usuario['tipo_documento'] ?? '');
+        $this->setDocumento($usuario['documento'] ?? 0);
+        $this->setTelefono($usuario['telefono'] ?? 0);
+        $this->setDireccion($usuario['direccion'] ?? '');
+        $this->setMunicipioId($usuario['municipio_id'] ?? 0);
+        $this->setUser($usuario['user'] ?? null);
+        $this->setPassword($usuario['password'] ?? null);
+        $this->setFoto($usuario['foto'] ?? null);
+        $this->setRol($usuario['rol'] ?? '');
+        $this->setEstado($usuario['estado'] ?? '');
+        $this->setFechaRegistro( !empty($usuario['fecha_registro']) ? Carbon::parse($usuario['fecha_registro']) : new Carbon());
+        $this->setCreatedAt(!empty($usuario['created_at']) ? Carbon::parse($usuario['created_at']) : new Carbon());
+        $this->setUpdatedAt(!empty($usuario['updated_at']) ? Carbon::parse($usuario['updated_at']) : new Carbon());
     }
 
-    /* Metodo destructor cierra la conexion. */
-    /**
-     *
-     */
     function __destruct()
     {
-        $this->Disconnect();
+        if($this->isConnected){
+            $this->Disconnect();
+        }
     }
 
     /**
      * @return int|mixed
      */
-    public function getId() : int
+    public function getId() : ?int
     {
         return $this->id;
     }
 
     /**
-     * @param int|mixed $id
+     * @param int|null $id
      */
-    public function setId(int $id): void
+    public function setId(?int $id): void
     {
         $this->id = $id;
     }
@@ -90,7 +84,7 @@ class Usuarios extends BasicModel implements JsonSerializable
      */
     public function getNombres() : string
     {
-        return $this->nombres;
+        return ucwords($this->nombres);
     }
 
     /**
@@ -98,7 +92,7 @@ class Usuarios extends BasicModel implements JsonSerializable
      */
     public function setNombres(string $nombres): void
     {
-        $this->nombres = $nombres;
+        $this->nombres = trim(mb_strtolower($nombres, 'UTF-8'));
     }
 
     /**
@@ -106,7 +100,7 @@ class Usuarios extends BasicModel implements JsonSerializable
      */
     public function getApellidos() : string
     {
-        return $this->apellidos;
+        return ucwords($this->apellidos);
     }
 
     /**
@@ -114,7 +108,7 @@ class Usuarios extends BasicModel implements JsonSerializable
      */
     public function setApellidos(string $apellidos): void
     {
-        $this->apellidos = $apellidos;
+        $this->apellidos = trim(mb_strtolower($apellidos, 'UTF-8'));
     }
 
     /**
@@ -182,6 +176,23 @@ class Usuarios extends BasicModel implements JsonSerializable
     }
 
     /**
+     * @return int
+     */
+    public function getMunicipioId(): int
+    {
+        return $this->municipio_id;
+    }
+
+    /**
+     * @param int $municipio_id
+     */
+    public function setMunicipioId(int $municipio_id): void
+    {
+        $this->municipio_id = $municipio_id;
+    }
+
+
+    /**
      * @return mixed|string
      */
     public function getUser() : ?string
@@ -211,6 +222,22 @@ class Usuarios extends BasicModel implements JsonSerializable
     public function setPassword(?string $password): void
     {
         $this->password = $password;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getFoto(): ?string
+    {
+        return $this->foto;
+    }
+
+    /**
+     * @param string|null $foto
+     */
+    public function setFoto(?string $foto): void
+    {
+        $this->foto = $foto;
     }
 
     /**
@@ -258,130 +285,200 @@ class Usuarios extends BasicModel implements JsonSerializable
      */
     public function setFechaRegistro(Carbon $fecha_registro): void
     {
-        $this->fecha_registro = $fecha_registro;
+        $this->fecha_nacimiento = $fecha_registro;
     }
 
     /**
-     * @return bool
-     * @throws \Exception
+     * @return Carbon|mixed
      */
-    public function create(): bool
+    public function getCreatedAt() : Carbon
     {
-        $result = $this->insertRow("INSERT INTO plotter.usuarios VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", array(
-                $this->nombres,
-                $this->apellidos,
-                $this->tipo_documento,
-                $this->documento,
-                $this->telefono,
-                $this->direccion,
-                $this->user,
-                $this->password,
-                $this->rol,
-                $this->estado,
-                $this->fecha_registro->toDateTimeString() //YYYY-MM-DD HH:MM:SS
-            )
-        );
+        return $this->created_at->locale('es');
+    }
+
+    /**
+     * @param Carbon|mixed $created_at
+     */
+    public function setCreatedAt(Carbon $created_at): void
+    {
+        $this->created_at = $created_at;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getUpdatedAt(): Carbon
+    {
+        return $this->updated_at->locale('es');
+    }
+
+    /**
+     * @param Carbon $updated_at
+     */
+    public function setUpdatedAt(Carbon $updated_at): void
+    {
+        $this->updated_at = $updated_at;
+    }
+
+    /**
+     * @return Municipios
+     */
+    public function getMunicipio(): ?Municipios
+    {
+        if(!empty($this->municipio_id)){
+            $this->municipio = Municipios::searchForId($this->municipio_id) ?? new Municipios();
+            return $this->municipio;
+        }
+        return NULL;
+    }
+
+    /**
+     * @return array
+     */
+    public function getVentasCliente(): ?array
+    {
+        if(!empty($this->getId())){
+            $this->ventasCliente = Ventas::search('SELECT * FROM ventas WHERE cliente_id = '.$this->getId());
+            return $this->ventasCliente;
+        }
+        return null;
+    }
+
+    /**
+     * @return array
+     */
+    public function getVentasEmpleado(): ?array
+    {
+        if(!empty($this->getId())){
+            $this->ventasEmpleado = Ventas::search('SELECT * FROM ventas WHERE empleado_id = '.$this->getId());
+            return $this->ventasEmpleado;
+        }
+        return null;
+    }
+
+    /**
+     * @param string $query
+     * @return bool|null
+     */
+    protected function save(string $query): ?bool
+    {
+        $arrData = [
+            ':id' =>    $this->getId(),
+            ':nombres' =>   $this->getNombres(),
+            ':apellidos' =>   $this->getApellidos(),
+            ':tipo_documento' =>  $this->getTipoDocumento(),
+            ':documento' =>   $this->getDocumento(),
+            ':telefono' =>   $this->getTelefono(),
+            ':direccion' =>   $this->getDireccion(),
+            ':municipio_id' =>   $this->getMunicipioId(),
+            ':user' =>  $this->getUser(),
+            ':password' =>   $this->getPassword(),
+            ':foto' =>   $this->getFoto(),
+            ':rol' =>   $this->getRol(),
+            ':estado' =>   $this->getEstado(),
+            ':fecha_registro' =>  $this->getFechaRegistro()->toDateString(), //YYYY-MM-DD
+            ':created_at' =>  $this->getCreatedAt()->toDateTimeString(), //YYYY-MM-DD HH:MM:SS
+            ':updated_at' =>  $this->getUpdatedAt()->toDateTimeString()
+        ];
+        $this->Connect();
+        $result = $this->insertRow($query, $arrData);
         $this->Disconnect();
         return $result;
     }
 
     /**
-     * @return bool
+     * @return bool|null
      */
-    public function update(): bool
+    public function insert(): ?bool
     {
-        $result = $this->updateRow("UPDATE plotter.usuarios SET nombres = ?, apellidos = ?, tipo_documento = ?, documento = ?, telefono = ?, direccion = ?, user = ?, password = ?, rol = ?, estado = ?, fecha_registro = ? WHERE id = ?", array(
-                $this->nombres,
-                $this->apellidos,
-                $this->tipo_documento,
-                $this->documento,
-                $this->telefono,
-                $this->direccion,
-                $this->user,
-                $this->password,
-                $this->rol,
-                $this->estado,
-                $this->fecha_registro->toDateTimeString(),
-                $this->id
-            )
-        );
-        $this->Disconnect();
-        return $result;
+        $query = "INSERT INTO plotter.usuarios VALUES (
+            :id,:nombres,:apellidos,:tipo_documento,:documento,
+            :telefono,:direccion,:municipio_id,:user,
+            :password,:foto,:rol,:estado,:fecha_registro,:created_at,:updated_at
+        )";
+        return $this->save($query);
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function update(): ?bool
+    {
+        $query = "UPDATE plotter.usuarios SET 
+            nombres = :nombres, apellidos = :apellidos, tipo_documento = :tipo_documento, 
+            documento = :documento, telefono = :telefono, direccion = :direccion, 
+            municipio_id = :municipio_id,  user = :user,  
+            password = :password, foto = :foto, rol = :rol, estado = :estado, fecha_registro = :fecha_registro, created_at = :created_at, 
+            updated_at = :updated_at WHERE id = :id";
+        return $this->save($query);
     }
 
     /**
      * @param $id
      * @return bool
+     * @throws Exception
      */
-    public function deleted($id): bool
+    public function deleted(): bool
     {
-        $User = Usuarios::searchForId($id); //Buscando un usuario por el ID
-        $User->setEstado("Inactivo"); //Cambia el estado del Usuario
-        return $User->update();                    //Guarda los cambios..
+        $this->setEstado("Inactivo"); //Cambia el estado del Usuario
+        return $this->update();                    //Guarda los cambios..
     }
 
     /**
      * @param $query
      * @return Usuarios|array
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function search($query) : array
+    public static function search($query) : ?array
     {
-        $arrUsuarios = array();
-        $tmp = new Usuarios();
-        $getrows = $tmp->getRows($query);
+        try {
+            $arrUsuarios = array();
+            $tmp = new Usuarios();
+            $tmp->Connect();
+            $getrows = $tmp->getRows($query);
+            $tmp->Disconnect();
 
-        foreach ($getrows as $valor) {
-            $Usuario = new Usuarios();
-            $Usuario->id = $valor['id'];
-            $Usuario->nombres = $valor['nombres'];
-            $Usuario->apellidos = $valor['apellidos'];
-            $Usuario->tipo_documento = $valor['tipo_documento'];
-            $Usuario->documento = $valor['documento'];
-            $Usuario->telefono = $valor['telefono'];
-            $Usuario->direccion = $valor['direccion'];
-            $Usuario->user = $valor['user'];
-            $Usuario->password = $valor['password'];
-            $Usuario->rol = $valor['rol'];
-            $Usuario->estado = $valor['estado'];
-            $Usuario->fecha_registro = Carbon::parse($valor['fecha_registro']);
-            $Usuario->Disconnect();
-            array_push($arrUsuarios, $Usuario);
+            if (!empty($getrows)) {
+                foreach ($getrows as $valor) {
+                    $Usuario = new Usuarios($valor);
+                    array_push($arrUsuarios, $Usuario);
+                    unset($Usuario);
+                }
+                return $arrUsuarios;
+            }
+            return null;
+        } catch (Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
         }
-        $tmp->Disconnect();
-        return $arrUsuarios;
+        return null;
     }
 
     /**
      * @param $id
      * @return Usuarios
-     * @throws \Exception
+     * @throws Exception
      */
-    public static function searchForId($id): Usuarios
+    public static function searchForId(int $id): ?Usuarios
     {
-        $Usuario = null;
-        if ($id > 0) {
-            $Usuario = new Usuarios();
-            $getrow = $Usuario->getRow("SELECT * FROM plotter.usuarios WHERE id =?", array($id));
-            $Usuario->id = $getrow['id'];
-            $Usuario->nombres = $getrow['nombres'];
-            $Usuario->apellidos = $getrow['apellidos'];
-            $Usuario->tipo_documento = $getrow['tipo_documento'];
-            $Usuario->documento = $getrow['documento'];
-            $Usuario->telefono = $getrow['telefono'];
-            $Usuario->direccion = $getrow['direccion'];
-            $Usuario->user = $getrow['user'];
-            $Usuario->password = $getrow['password'];
-            $Usuario->rol = $getrow['rol'];
-            $Usuario->estado = $getrow['estado'];
-            $Usuario->fecha_registro = Carbon::parse($getrow['fecha_registro']);
+        try {
+            if ($id > 0) {
+                $tmpUsuario = new Usuarios();
+                $tmpUsuario->Connect();
+                $getrow = $tmpUsuario->getRow("SELECT * FROM plotter.usuarios WHERE id =?", array($id));
+                $tmpUsuario->Disconnect();
+                return ($getrow) ? new Usuarios($getrow) : null;
+            }else{
+                throw new Exception('Id de usuario Invalido');
+            }
+        } catch (Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
         }
-        $Usuario->Disconnect();
-        return $Usuario;
+        return null;
     }
 
     /**
      * @return array
+     * @throws Exception
      */
     public static function getAll(): array
     {
@@ -391,12 +488,12 @@ class Usuarios extends BasicModel implements JsonSerializable
     /**
      * @param $documento
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public static function usuarioRegistrado($documento): bool
     {
         $result = Usuarios::search("SELECT * FROM plotter.usuarios where documento = " . $documento);
-        if ( count ($result) > 0 ) {
+        if ( !empty($result) && count ($result) > 0 ) {
             return true;
         } else {
             return false;
@@ -416,33 +513,31 @@ class Usuarios extends BasicModel implements JsonSerializable
      */
     public function __toString() : string
     {
-        return "Nombres: $this->nombres, Apellidos: $this->nombres, Tipo Documento: $this->tipo_documento, Documento: $this->documento, Telefono: $this->telefono, Direccion: $this->direccion)";
+        return "Nombres: $this->nombres, Apellidos: $this->nombres, Tipo Documento: $this->tipo_documento, Documento: $this->documento, Telefono: $this->telefono, Direccion: $this->direccion, Direccion: $this->fecha_registro->toDateTimeString()";
     }
 
     public function Login($User, $Password){
-        $resultUsuarios = Usuarios::search("SELECT * FROM usuarios WHERE user = '$User'");
-        if(count($resultUsuarios) >= 1){
-            if($resultUsuarios[0]->password == $Password){
-                if($resultUsuarios[0]->estado == 'Activo'){
-                    return $resultUsuarios[0];
+        try {
+            $resultUsuarios = Usuarios::search("SELECT * FROM usuarios WHERE user = '$User'");
+            if(count($resultUsuarios) >= 1){
+                if($resultUsuarios[0]->password == $Password){
+                    if($resultUsuarios[0]->estado == 'Activo'){
+                        return $resultUsuarios[0];
+                    }else{
+                        return "Usuario Inactivo";
+                    }
                 }else{
-                    return "Usuario Inactivo";
+                    return "Contraseña Incorrecta";
                 }
             }else{
-                return "Contraseña Incorrecta";
+                return "Usuario Incorrecto";
             }
-        }else{
-            return "Usuario Incorrecto";
+        } catch (Exception $e) {
+            GeneralFunctions::logFile('Exception',$e, 'error');
+            return "Error en Servidor";
         }
     }
 
-    /**
-     * Specify data which should be serialized to JSON
-     * @link https://php.net/manual/en/jsonserializable.jsonserialize.php
-     * @return mixed data which can be serialized by <b>json_encode</b>,
-     * which is a value of any type other than a resource.
-     * @since 5.4
-     */
     public function jsonSerialize()
     {
         return [
@@ -453,11 +548,15 @@ class Usuarios extends BasicModel implements JsonSerializable
             'documento' => $this->getDocumento(),
             'telefono' => $this->getTelefono(),
             'direccion' => $this->getDireccion(),
+            'municipio_id' => $this->getMunicipioId(),
             'user' => $this->getUser(),
             'password' => $this->getPassword(),
+            'foto' => $this->getFoto(),
             'rol' => $this->getRol(),
             'estado' => $this->getEstado(),
-            'fecha_registro' => $this->getFechaRegistro()->toDateTimeString(),
+            'fecha_registro' => $this->getFechaRegistro()->toDateString(),
+            'created_at' => $this->getCreatedAt()->toDateTimeString(),
+            'updated_at' => $this->getUpdatedAt()->toDateTimeString(),
         ];
     }
 }

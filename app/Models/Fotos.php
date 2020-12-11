@@ -218,7 +218,7 @@ class Fotos extends AbstractDBConnection implements Model, JsonSerializable
      */
     function insert(): ?bool
     {
-        $query = "INSERT INTO weber.fotos VALUES (:id, :nombre, :descripcion, :producto_id, :ruta, :estado, :created_at, :updated_at)";
+        $query = "INSERT INTO plotter.fotos VALUES (:id, :nombre, :descripcion, :producto_id, :ruta, :estado, :created_at, :updated_at)";
         return $this->save($query);
     }
 
@@ -227,7 +227,7 @@ class Fotos extends AbstractDBConnection implements Model, JsonSerializable
      */
     function update(): ?bool
     {
-        $query = "UPDATE weber.fotos SET 
+        $query = "UPDATE plotter.fotos SET 
             nombre = :nombre, descripcion = :descripcion, producto_id = :producto_id, 
             ruta = :ruta, estado = :estado, created_at = :created_at, 
             updated_at = :updated_at WHERE id = :id";
@@ -276,7 +276,7 @@ class Fotos extends AbstractDBConnection implements Model, JsonSerializable
      */
     static function getAll(): ?array
     {
-        return Fotos::search("SELECT * FROM weber.fotos");
+        return Fotos::search("SELECT * FROM plotter.fotos");
     }
 
     static function searchForId(int $id): ?object
@@ -285,7 +285,7 @@ class Fotos extends AbstractDBConnection implements Model, JsonSerializable
             if ($id > 0) {
                 $Foto = new Fotos();
                 $Foto->Connect();
-                $getrow = $Foto->getRow("SELECT * FROM weber.fotos WHERE id =?", array($id));
+                $getrow = $Foto->getRow("SELECT * FROM plotter.fotos WHERE id =?", array($id));
                 $Foto->Disconnect();
                 return ($getrow) ? new Fotos($getrow) : null;
             }else{

@@ -51,6 +51,5 @@
     <orderEntry type="library" name="bootstrap" level="application" />
     <orderEntry type="library" name="font-awesome" level="application" />
     <orderEntry type="library" name="adminlte" level="project" />
-    <orderEntry type="module" module-name="WebER" />
   </component>
 </module>
