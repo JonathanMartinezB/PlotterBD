@@ -4,12 +4,19 @@ require_once("../../partials/routes.php");
 require_once("../../partials/check_login.php");
 
 use App\Controllers\ComprasController;
+use App\Models\Compras;
+use App\Models\GeneralFunctions;
+use App\Models\Ventas;
+
+$nameModel = "Compra";
+$pluralModel = $nameModel.'s';
+$frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
 
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Layout</title>
+    <title><?= $_ENV['TITLE_SITE'] ?> | Gestión de <?= $pluralModel ?></title>
     <?php require("../../partials/head_imports.php"); ?>
     <!-- DataTables -->
     <link rel="stylesheet" href="<?= $adminlteURL ?>/plugins/datatables-bs4/css/dataTables.bootstrap4.css">
@@ -35,8 +42,8 @@ use App\Controllers\ComprasController;
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="<?= $baseURL; ?>/Views/">WebER</a></li>
-                            <li class="breadcrumb-item active">Inicio</li>
+                            <li class="breadcrumb-item"><a href="<?= $baseURL; ?>/views/"><?= $_ENV['ALIASE_SITE'] ?></a></li>
+                            <li class="breadcrumb-item active"><?= $pluralModel ?></li>
                         </ol>
                     </div>
                 </div>
@@ -45,28 +52,15 @@ use App\Controllers\ComprasController;
 
         <!-- Main content -->
         <section class="content">
-
-            <?php if (!empty($_GET['respuesta']) && !empty($_GET['action'])) { ?>
-                <?php if ($_GET['respuesta'] == "correcto") { ?>
-                    <div class="alert alert-success alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                        <h5><i class="icon fas fa-check"></i> Correcto!</h5>
-                        <?php if ($_GET['action'] == "create") { ?>
-                            La compra ha sido creada con exito!
-                        <?php } else if ($_GET['action'] == "update") { ?>
-                            Los datos de la compra han sido actualizados correctamente!
-                        <?php } ?>
-                    </div>
-                <?php } ?>
-            <?php } ?>
-
+            <!-- Generar Mensajes de alerta -->
+            <?= (!empty($_GET['respuesta'])) ? GeneralFunctions::getAlertDialog($_GET['respuesta'], $_GET['mensaje']) : ""; ?>
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-md-12">
                         <!-- Default box -->
                         <div class="card card-dark">
                             <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-shopping-cart"></i> &nbsp; Gestionar Compras</h3>
+                                <h3 class="card-title"><i class="fas fa-shopping-cart"></i> &nbsp; Gestionar <?= $pluralModel ?></h3>
                                 <div class="card-tools">
                                     <button type="button" class="btn btn-tool" data-card-widget="card-refresh"
                                             data-source="index.php" data-source-selector="#card-refresh-content"
@@ -87,19 +81,19 @@ use App\Controllers\ComprasController;
                                     <div class="col-auto">
                                         <a role="button" href="create.php" class="btn btn-primary float-right"
                                            style="margin-right: 5px;">
-                                            <i class="fas fa-plus"></i> Crear Compra
+                                            <i class="fas fa-plus"></i> Crear <?= $nameModel ?>
                                         </a>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col">
-                                        <table id="tblUsuarios" class="datatable table table-bordered table-striped">
+                                        <table id="tbl<?= $nameModel ?>" class="datatable table table-bordered table-striped">
                                             <thead>
                                             <tr>
                                                 <th>#</th>
                                                 <th>Numero</th>
-                                                <th>Cliente</th>
                                                 <th>Empleado</th>
+                                                <th>Proveedor</th>
                                                 <th>Fecha Compra</th>
                                                 <th>Monto</th>
                                                 <th>Estado</th>
@@ -109,31 +103,30 @@ use App\Controllers\ComprasController;
                                             <tbody>
                                             <?php
                                             $arrCompras = ComprasController::getAll();
-                                            /* @var $arrCompras \App\Models\Compras[] */
+                                            /* @var $arrCompras Compras[] */
                                             foreach ($arrCompras as $compra) {
                                                 ?>
                                                 <tr>
                                                     <td><?= $compra->getId(); ?></td>
-                                                    <td><?= $compra->getNumeroSerie(); ?>-<?= $compra->getId(); ?></td>
-                                                    <td><?= $compra->getClienteId()->getNombres(); ?> <?= $compra->getClienteId()->getApellidos(); ?></td>
-                                                    <td><?= $compra->getEmpleadoId()->getNombres(); ?> <?= $compra->getEmpleadoId()->getApellidos(); ?></td>
+                                                    <td><?= $compra->getNumeroSerie(); ?></td>
+                                                    <td><?= $compra->getEmpleado()->getNombres(); ?> <?= $compra->getEmpleado()->getApellidos(); ?></td>
+                                                    <td><?= $compra->getProveedor()->getNombres(); ?> <?= $compra->getProveedor()->getApellidos(); ?></td>
                                                     <td><?= $compra->getFechaCompra(); ?></td>
-                                                    <td><?= $compra->getMonto(); ?></td>
+                                                    <td><?= GeneralFunctions::formatCurrency($compra->getMonto()); ?></td>
                                                     <td><?= $compra->getEstado(); ?></td>
                                                     <td>
                                                         <a href="show.php?id=<?php echo $compra->getId(); ?>"
                                                            type="button" data-toggle="tooltip" title="Ver"
                                                            class="btn docs-tooltip btn-warning btn-xs"><i
                                                                     class="fa fa-eye"></i></a>
-                                                        <?php if ($compra->getEstado() != "Activo") { ?>
-                                                            <a href="../../../app/Controllers/ComprasController.php?action=activate&Id=<?php echo $compra->getId(); ?>"
-                                                               type="button" data-toggle="tooltip" title="Activar"
+                                                        <?php if ($compra->getEstado() == "En progreso") { ?>
+                                                            <a href="create.php?id=<?php echo $compra->getId(); ?>"
+                                                               type="button" data-toggle="tooltip" title="Retomar"
                                                                class="btn docs-tooltip btn-success btn-xs"><i
-                                                                        class="fa fa-check-square"></i></a>
-                                                        <?php } else { ?>
+                                                                        class="fa fa-undo-alt"></i></a>
                                                             <a type="button"
-                                                               href="../../../app/Controllers/ComprasController.php?action=inactivate&Id=<?php echo $compra->getId(); ?>"
-                                                               data-toggle="tooltip" title="Inactivar"
+                                                               href="../../../app/Controllers/MainController.php?controller=<?= $pluralModel ?>&action=cancel&Id=<?= $compra->getId(); ?>"
+                                                               data-toggle="tooltip" title="Cancelar"
                                                                class="btn docs-tooltip btn-danger btn-xs"><i
                                                                         class="fa fa-times-circle"></i></a>
                                                         <?php } ?>
@@ -146,8 +139,8 @@ use App\Controllers\ComprasController;
                                             <tr>
                                                 <th>#</th>
                                                 <th>Numero</th>
-                                                <th>Cliente</th>
                                                 <th>Empleado</th>
+                                                <th>Proveedor</th>
                                                 <th>Fecha Compra</th>
                                                 <th>Monto</th>
                                                 <th>Estado</th>
@@ -179,41 +172,8 @@ use App\Controllers\ComprasController;
 </div>
 <!-- ./wrapper -->
 <?php require('../../partials/scripts.php'); ?>
-<!-- DataTables -->
-<script src="<?= $adminlteURL ?>/plugins/datatables/jquery.dataTables.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-responsive/js/dataTables.responsive.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-responsive/js/responsive.bootstrap4.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/dataTables.buttons.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.bootstrap4.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/jszip/jszip.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/pdfmake/pdfmake.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.html5.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.print.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.colVis.js"></script>
-
-<script>
-    $(function () {
-        $('.datatable').DataTable({
-            "dom": 'Bfrtip',
-            "paging": true,
-            "lengthChange": true,
-            "searching": true,
-            "ordering": true,
-            "info": true,
-            "autoWidth": true,
-            "language": {
-                "url": "../../public/Spanish.json" //Idioma
-            },
-            "buttons": [
-                'copy', 'print', 'excel', 'pdf'
-            ],
-            "pagingType": "full_numbers",
-            "responsive": true,
-            "stateSave": true, //Guardar la configuracion del usuario
-        });
-    });
-</script>
+<!-- Scripts requeridos para las datatables -->
+<?php require('../../partials/datatables_scripts.php'); ?>
 
 </body>
 </html>

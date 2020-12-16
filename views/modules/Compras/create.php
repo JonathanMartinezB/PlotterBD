@@ -1,8 +1,4 @@
 <?php
-require_once("../../../app/Controllers/DetalleComprasController.php");
-require_once("../../../app/Controllers/ComprasController.php");
-require_once("../../../app/Controllers/UsuariosController.php");
-require_once("../../../app/Controllers/ProductosController.php");
 require("../../partials/routes.php");
 require_once("../../partials/check_login.php");
 
@@ -10,13 +6,28 @@ use App\Controllers\ProductosController;
 use App\Controllers\UsuariosController;
 use App\Controllers\ComprasController;
 use App\Models\DetalleCompras;
+use App\Models\GeneralFunctions;
+use Carbon\Carbon;
 
+$nameModel = "Compra";
+$pluralModel = $nameModel.'s';
+$frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
+?>
+
+<?php
+$dataCompra = null;
+if (!empty($_GET['id'])) {
+    $dataCompra = ComprasController::searchForID(["id" => $_GET['id']]);
+    if ($dataCompra->getEstado() != "En progreso"){
+        header('Location: index.php?respuesta=warning&mensaje=La venta ya ha finalizado');
+    }
+}
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Crear Compra</title>
+    <title><?= $_ENV['TITLE_SITE'] ?> | Crear <?= $nameModel ?></title>
     <?php require("../../partials/head_imports.php"); ?>
     <!-- DataTables -->
     <link rel="stylesheet" href="<?= $adminlteURL ?>/plugins/datatables-bs4/css/dataTables.bootstrap4.css">
@@ -33,28 +44,20 @@ use App\Models\DetalleCompras;
 
     <!-- Content Wrapper. Contains page content -->
     <div class="content-wrapper">
-
-        <?php if (!empty($_GET['respuesta'])) { ?>
-            <?php if ($_GET['respuesta'] != "correcto") { ?>
-                <div class="alert alert-danger alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                    <h5><i class="icon fas fa-ban"></i> Error!</h5>
-                    Error al crear la compra: <?= $_GET['mensaje'] ?>
-                </div>
-            <?php } ?>
-        <?php } ?>
-
+        <!-- Generar Mensaje de alerta -->
+        <?= (!empty($_GET['respuesta'])) ? GeneralFunctions::getAlertDialog($_GET['respuesta'], $_GET['mensaje']) : ""; ?>
         <!-- Content Header (Page header) -->
         <section class="content-header">
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Crear una Nueva Compra</h1>
+                        <h1>Crear una nueva <?= $nameModel ?></h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="<?= $baseURL; ?>/Views/">Plotter</a></li>
-                            <li class="breadcrumb-item active">Inicio</li>
+                            <li class="breadcrumb-item"><a href="<?= $baseURL; ?>/views/"><?= $_ENV['ALIASE_SITE'] ?></a></li>
+                            <li class="breadcrumb-item"><a href="index.php"><?= $pluralModel ?></a></li>
+                            <li class="breadcrumb-item active">Crear</li>
                         </ol>
                     </div>
                 </div>
@@ -70,7 +73,7 @@ use App\Models\DetalleCompras;
                         <div class="card card-info">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-shopping-cart"></i> &nbsp; Información de la
-                                    Compra</h3>
+                                    <?= $nameModel ?></h3>
                                 <div class="card-tools">
                                     <button type="button" class="btn btn-tool" data-card-widget="card-refresh"
                                             data-source="create.php" data-source-selector="#card-refresh-content"
@@ -83,50 +86,50 @@ use App\Models\DetalleCompras;
                             </div>
 
                             <div class="card-body">
-                                <form class="form-horizontal" method="post" id="frmCreateCompra" name="frmCreateCompra"
-                                      action="../../../app/Controllers/ComprasController.php?action=create">
+                                <form class="form-horizontal" method="post" id="frmCreate<?= $nameModel ?>" name="frmCreate<?= $nameModel ?>"
+                                      action="../../../app/Controllers/MainController.php?controller=<?= $pluralModel ?>&action=create">
 
-                                    <?php
-                                    $dataCompra = null;
-                                    if (!empty($_GET['id'])) {
-                                        $dataCompra = ComprasController::searchForID($_GET['id']);
-                                    }
-                                    ?>
-
-                                    <div class="form-group row">
-                                        <label for="cliente_id" class="col-sm-4 col-form-label">Cliente</label>
-                                        <div class="col-sm-8">
-                                            <?= UsuariosController::selectUsuario(false,
-                                                true,
-                                                'cliente_id',
-                                                'cliente_id',
-                                                (!empty($dataVenta)) ? $dataVenta->getClienteId()->getId() : '',
-                                                'form-control select2bs4 select2-info',
-                                                "rol = 'Cliente' and estado = 'Activo'")
-                                            ?>
-                                        </div>
-                                    </div>
                                     <div class="form-group row">
                                         <label for="empleado_id" class="col-sm-4 col-form-label">Empleado</label>
                                         <div class="col-sm-8">
-                                            <?= UsuariosController::selectUsuario(false,
-                                                true,
-                                                'empleado_id',
-                                                'empleado_id',
-                                                (!empty($dataCompra)) ? $dataCompra->getEmpleadoId()->getId() : '',
-                                                'form-control select2bs4 select2-info',
-                                                "rol = 'Empleado' and estado = 'Activo'")
+                                            <?= UsuariosController::selectUsuario(
+                                                array (
+                                                    'id' => 'empleado_id',
+                                                    'name' => 'empleado_id',
+                                                    'defaultValue' => (!empty($dataCompra)) ? $dataCompra->getEmpleado()->getId() : '',
+                                                    'class' => 'form-control select2bs4 select2-info',
+                                                    'where' => "rol = 'Empleado' and estado = 'Activo'"
+                                                )
+                                            )
                                             ?>
                                         </div>
                                     </div>
+
+                                    <div class="form-group row">
+                                        <label for="cliente_id" class="col-sm-4 col-form-label">Proveedor</label>
+                                        <div class="col-sm-8">
+                                            <?= UsuariosController::selectUsuario(
+                                                array (
+                                                    'id' => 'proveedor_id',
+                                                    'name' => 'proveedor_id',
+                                                    'defaultValue' => (!empty($dataCompra)) ? $dataCompra->getProveedor()->getId() : '',
+                                                    'class' => 'form-control select2bs4 select2-info',
+                                                    'where' => "rol = 'Proveedor' and estado = 'Activo'"
+                                                )
+                                            )
+                                            ?>
+                                            <span class="text-info"><a href="../usuarios/create.php">Crear Proveedor</a></span>
+                                        </div>
+                                    </div>
+
                                     <?php
                                     if (!empty($dataCompra)) {
                                         ?>
                                         <div class="form-group row">
                                             <label for="numero_serie" class="col-sm-4 col-form-label">Codigo
-                                                Factura</label>
+                                                Compra</label>
                                             <div class="col-sm-8">
-                                                <?= $dataCompra->getNumeroSerie() ?>-<?= $dataCompra->getId() ?>
+                                                <?= $dataCompra->getNumeroSerie() ?>
                                             </div>
                                         </div>
                                         <div class="form-group row">
@@ -139,7 +142,7 @@ use App\Models\DetalleCompras;
                                         <div class="form-group row">
                                             <label for="numero_serie" class="col-sm-4 col-form-label">Monto</label>
                                             <div class="col-sm-8">
-                                                <?= $dataCompra->getMonto() ?>
+                                                <?= GeneralFunctions::formatCurrency($dataCompra->getMonto()) ?>
                                             </div>
                                         </div>
                                     <?php } ?>
@@ -189,43 +192,30 @@ use App\Models\DetalleCompras;
                                                 <th>Producto</th>
                                                 <th>Cantidad</th>
                                                 <th>Precio</th>
-                                                <th>Acciones</th>
+                                                <th>Total</th>
+                                                <th>Act</th>
                                             </tr>
                                             </thead>
                                             <tbody>
                                             <?php
-                                            if (!empty($_GET['id'])) {
-                                                $arrDetalleCompras = DetalleCompras::search("SELECT * FROM plotter.detalle_compras WHERE compras_id = ".$_GET['id']);
+                                            if (!empty($dataCompra) and !empty($dataCompra->getId())) {
+                                                $arrDetalleCompras = DetalleCompras::search("SELECT * FROM plotter.detalle_compras WHERE compra_id = ".$dataCompra->getId());
                                                 if(count($arrDetalleCompras) > 0) {
-                                                    /* @var $arrDetalleCompras \App\Models\DetalleCompras[] */
+                                                    /* @var $arrDetalleCompras DetalleCompras[] */
                                                     foreach ($arrDetalleCompras as $detalleCompra) {
                                                         ?>
                                                         <tr>
-                                                            <td><?php echo $detalleCompra->getId(); ?></td>
-                                                            <td><?php echo $detalleCompra->getProductoId()->getNombres(); ?></td>
-                                                            <td><?php echo $detalleCompra->getCantidad(); ?></td>
-                                                            <td><?php echo $detalleCompra->getPrecio(); ?></td>
+                                                            <td><?= $detalleCompra->getId(); ?></td>
+                                                            <td><?= $detalleCompra->getProducto()->getNombre(); ?></td>
+                                                            <td><?= $detalleCompra->getCantidad(); ?></td>
+                                                            <td><?= GeneralFunctions::formatCurrency($detalleCompra->getPrecioVenta()); ?></td>
+                                                            <td><?= GeneralFunctions::formatCurrency($detalleCompra->getTotalProducto()); ?></td>
                                                             <td>
-                                                                <a href="edit.php?id=<?php echo $detalleCompra->getId(); ?>"
-                                                                   type="button" data-toggle="tooltip" title="Actualizar"
-                                                                   class="btn docs-tooltip btn-primary btn-xs"><i
-                                                                            class="fa fa-edit"></i></a>
-                                                                <a href="show.php?id=<?php echo $detalleCompra->getId(); ?>"
-                                                                   type="button" data-toggle="tooltip" title="Ver"
-                                                                   class="btn docs-tooltip btn-warning btn-xs"><i
-                                                                            class="fa fa-eye"></i></a>
-                                                                <?php if ($detalleCompra->getEstado() != "Activo") { ?>
-                                                                    <a href="../../../app/Controllers/ProductosController.php?action=activate&Id=<?php echo $detalleCompra->getId(); ?>"
-                                                                       type="button" data-toggle="tooltip" title="Activar"
-                                                                       class="btn docs-tooltip btn-success btn-xs"><i
-                                                                                class="fa fa-check-square"></i></a>
-                                                                <?php } else { ?>
-                                                                    <a type="button"
-                                                                       href="../../../app/Controllers/ProductosController.php?action=inactivate&Id=<?php echo $detalleCompra->getId(); ?>"
-                                                                       data-toggle="tooltip" title="Inactivar"
-                                                                       class="btn docs-tooltip btn-danger btn-xs"><i
-                                                                                class="fa fa-times-circle"></i></a>
-                                                                <?php } ?>
+                                                                <a type="button"
+                                                                   href="../../../app/Controllers/MainController.php?controller=DetalleCompras&action=deleted&id=<?= $detalleCompra->getId(); ?>"
+                                                                   data-toggle="tooltip" title="Eliminar"
+                                                                   class="btn docs-tooltip btn-danger btn-xs"><i
+                                                                            class="fa fa-times-circle"></i></a>
                                                             </td>
                                                         </tr>
                                                     <?php }
@@ -236,10 +226,11 @@ use App\Models\DetalleCompras;
                                             <tfoot>
                                             <tr>
                                                 <th>#</th>
-                                                <th>Nombres</th>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
                                                 <th>Precio</th>
-                                                <th>Stock</th>
-                                                <th>Acciones</th>
+                                                <th>Total</th>
+                                                <th>Act</th>
                                             </tr>
                                             </tfoot>
                                         </table>
@@ -262,31 +253,35 @@ use App\Models\DetalleCompras;
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Agregar Producto a Compra</h4>
+                        <h4 class="modal-title">Agregar Producto a Venta</h4>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="../../../app/Controllers/DetalleComprasController.php?action=create" method="post">
+                    <form action="../../../app/Controllers/MainController.php?controller=DetalleCompras&action=create" method="post">
                         <div class="modal-body">
-                            <?php //var_dump($dataCompra); ?>
-                            <input id="compras_id" name="compras_id" value="<?= !empty($dataCompra) ? $dataCompra->getId() : ''; ?>" hidden
+                            <input id="compra_id" name="compra_id" value="<?= !empty($dataCompra) ? $dataCompra->getId() : ''; ?>" hidden
                                    required="required" type="text">
                             <div class="form-group row">
                                 <label for="producto_id" class="col-sm-4 col-form-label">Producto</label>
                                 <div class="col-sm-8">
-                                    <?= ProductosController::selectProducto(false,
-                                        true,
-                                        'producto_id',
-                                        'producto_id',
-                                        '',
-                                        'form-control select2bs4 select2-info',
-                                        "estado = 'Activo'")
+                                    <?= ProductosController::selectProducto(
+                                        array (
+                                            'id' => 'producto_id',
+                                            'name' => 'producto_id',
+                                            'defaultValue' => '',
+                                            'class' => 'form-control select2bs4 select2-info',
+                                            'where' => "estado = 'Activo' and stock > 0"
+                                        )
+                                    )
                                     ?>
                                     <div id="divResultProducto">
                                         <span class="text-muted">Precio Base: </span> <span id="spPrecio"></span>,
-                                        <span class="text-muted">Precio Compra: </span> <span id="spPrecioCompra"></span>,
+                                        <span class="text-muted">Precio Venta: </span> <span id="spPrecioVenta"></span>,
                                         <span class="text-muted">Stock: </span> <span id="spStock"></span>.
+                                        <span class="badge badge-info" id="spFoto" data-toggle="tooltip" data-html="true"
+                                              title="<img class='img-thumbnail' src='../../public/uploadFiles/photos/products/'>">Foto
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -298,9 +293,9 @@ use App\Models\DetalleCompras;
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="precio_compra" class="col-sm-4 col-form-label">Precio Unitario</label>
+                                <label for="precio_venta" class="col-sm-4 col-form-label">Precio Unitario</label>
                                 <div class="col-sm-8">
-                                    <input required readonly type="number" min="1" class="form-control" id="precio_compra" name="precio_compra"
+                                    <input required readonly type="number" min="1" class="form-control" id="precio_venta" name="precio_venta"
                                            placeholder="0.0">
                                 </div>
                             </div>
@@ -328,18 +323,8 @@ use App\Models\DetalleCompras;
 </div>
 <!-- ./wrapper -->
 <?php require('../../partials/scripts.php'); ?>
-<!-- DataTables -->
-<script src="<?= $adminlteURL ?>/plugins/datatables/jquery.dataTables.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-bs4/js/dataTables.bootstrap4.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-responsive/js/dataTables.responsive.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-responsive/js/responsive.bootstrap4.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/dataTables.buttons.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.bootstrap4.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/jszip/jszip.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/pdfmake/pdfmake.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.html5.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.print.js"></script>
-<script src="<?= $adminlteURL ?>/plugins/datatables-buttons/js/buttons.colVis.js"></script>
+<!-- Scripts requeridos para las datatables -->
+<?php require('../../partials/datatables_scripts.php'); ?>
 
 <script>
 
@@ -351,16 +336,21 @@ use App\Models\DetalleCompras;
             var dataSelect = e.params.data;
             var dataProducto = null;
             if(dataSelect.id !== ""){
-                $.post("../../../app/Controllers/ProductosController.php?action=searchForIDAjax", {idProducto: dataSelect.id}, "json")
-                    .done(function( resultProducto ) {
-                        dataProducto = resultProducto;
-                    })
-                    .fail(function(err) {
-                        console.log( "Error al realizar la consulta"+err );
-                    })
-                    .always(function() {
-                        updateDataProducto(dataProducto);
-                    });
+                $.post("../../../app/Controllers/MainController.php?controller=Productos&action=searchForID",
+                    {
+                        id: dataSelect.id,
+                        request: 'ajax'
+                    }, "json"
+                )
+                .done(function( resultProducto ) {
+                    dataProducto = resultProducto;
+                })
+                .fail(function(err) {
+                    console.log( "Error al realizar la consulta"+err );
+                })
+                .always(function() {
+                    updateDataProducto(dataProducto);
+                });
             }else{
                 updateDataProducto(dataProducto);
             }
@@ -389,24 +379,6 @@ use App\Models\DetalleCompras;
             $("#total_producto").val($( "#cantidad" ).val() *  $("#precio_venta").val());
         });
 
-        $('.datatable').DataTable({
-            "dom": 'Bfrtip',
-            "paging": true,
-            "lengthChange": true,
-            "searching": true,
-            "ordering": true,
-            "info": true,
-            "autoWidth": true,
-            "language": {
-                "url": "../../public/Spanish.json" //Idioma
-            },
-            "buttons": [
-                'copy', 'print', 'excel', 'pdf'
-            ],
-            "pagingType": "full_numbers",
-            "responsive": true,
-            "stateSave": true, //Guardar la configuracion del usuario
-        });
     });
 </script>
 

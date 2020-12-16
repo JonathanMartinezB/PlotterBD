@@ -65,9 +65,9 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                             data-source="create.php" data-source-selector="#card-refresh-content"
                                             data-load-on-init="false"><i class="fas fa-sync-alt"></i></button>
                                     <button type="button" class="btn btn-tool" data-card-widget="maximize"><i
-                                            class="fas fa-expand"></i></button>
+                                                class="fas fa-expand"></i></button>
                                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                            class="fas fa-minus"></i></button>
+                                                class="fas fa-minus"></i></button>
                                 </div>
                             </div>
                             <!-- /.card-header -->
@@ -105,13 +105,15 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                     <div class="form-group row">
                                                         <label for="producto_id" class="col-sm-2 col-form-label">Producto</label>
                                                         <div class="col-sm-10">
-                                                            <?= ProductosController::selectProducto(false,
-                                                                true,
-                                                                'producto_id',
-                                                                'producto_id',
-                                                                $DataFoto->getProductoId() ?? '',
-                                                                'form-control select2bs4 select2-info',
-                                                                "estado = 'Activo'")
+                                                            <?= ProductosController::selectProducto(
+                                                                array (
+                                                                    'id' => 'producto_id',
+                                                                    'name' => 'producto_id',
+                                                                    'defaultValue' => $DataFoto->getProductoId() ?? '',
+                                                                    'class' => 'form-control select2bs4 select2-info',
+                                                                    'where' => "estado = 'Activo'"
+                                                                )
+                                                            )
                                                             ?>
                                                         </div>
                                                     </div>
@@ -120,10 +122,10 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                         <div class="col-sm-10">
                                                             <select id="estado" name="estado" class="custom-select">
                                                                 <option <?= ($DataFoto->getEstado() == "Activo") ? "selected" : ""; ?>
-                                                                    value="Activo">Activo
+                                                                        value="Activo">Activo
                                                                 </option>
                                                                 <option <?= ($DataFoto->getEstado() == "Inactivo") ? "selected" : ""; ?>
-                                                                    value="Inactivo">Inactivo
+                                                                        value="Inactivo">Inactivo
                                                                 </option>
                                                             </select>
                                                         </div>

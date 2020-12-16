@@ -69,7 +69,7 @@ $_SESSION['idProducto'] = !empty($_GET['idProducto']) ? ProductosController::sea
                                             data-source="index.php" data-source-selector="#card-refresh-content"
                                             data-load-on-init="false"><i class="fas fa-sync-alt"></i></button>
                                     <button type="button" class="btn btn-tool" data-card-widget="maximize"><i
-                                            class="fas fa-expand"></i></button>
+                                                class="fas fa-expand"></i></button>
                                     <button type="button" class="btn btn-tool" data-card-widget="collapse"
                                             data-toggle="tooltip" title="Collapse">
                                         <i class="fas fa-minus"></i></button>
@@ -131,22 +131,22 @@ $_SESSION['idProducto'] = !empty($_GET['idProducto']) ? ProductosController::sea
                                                         <a href="edit.php?id=<?= $foto->getId(); ?>"
                                                            type="button" data-toggle="tooltip" title="Actualizar"
                                                            class="btn docs-tooltip btn-primary btn-xs"><i
-                                                                class="fa fa-edit"></i></a>
+                                                                    class="fa fa-edit"></i></a>
                                                         <a href="show.php?id=<?= $foto->getId(); ?>"
                                                            type="button" data-toggle="tooltip" title="Ver"
                                                            class="btn docs-tooltip btn-warning btn-xs"><i
-                                                                class="fa fa-eye"></i></a>
+                                                                    class="fa fa-eye"></i></a>
                                                         <?php if ($foto->getEstado() != "Activo") { ?>
                                                             <a href="../../../app/Controllers/MainController.php?controller=<?= $pluralModel ?>&action=activate&id=<?= $foto->getId(); ?>"
                                                                type="button" data-toggle="tooltip" title="Activar"
                                                                class="btn docs-tooltip btn-success btn-xs"><i
-                                                                    class="fa fa-check-square"></i></a>
+                                                                        class="fa fa-check-square"></i></a>
                                                         <?php } else { ?>
                                                             <a type="button"
                                                                href="../../../app/Controllers/MainController.php?controller=<?= $pluralModel ?>&action=inactivate&id=<?= $foto->getId(); ?>"
                                                                data-toggle="tooltip" title="Inactivar"
                                                                class="btn docs-tooltip btn-danger btn-xs"><i
-                                                                    class="fa fa-times-circle"></i></a>
+                                                                        class="fa fa-times-circle"></i></a>
                                                         <?php } ?>
                                                     </td>
                                                 </tr>
@@ -191,4 +191,3 @@ $_SESSION['idProducto'] = !empty($_GET['idProducto']) ? ProductosController::sea
 <?php require('../../partials/datatables_scripts.php'); ?>
 </body>
 </html>
-

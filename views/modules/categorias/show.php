@@ -1,20 +1,20 @@
 <?php
 require("../../partials/routes.php");
 require_once("../../partials/check_login.php");
-require("../../../app/Controllers/VentasController.php");
+require("../../../app/Controllers/CategoriasController.php");
 
-use App\Controllers\VentasController;
-use App\Models\Ventas;
+use App\Controllers\CategoriasController;
+use App\Models\Categorias;
 use App\Models\GeneralFunctions;
 
-$nameModel = "Venta";
+$nameModel = "Categoria";
 $pluralModel = $nameModel.'s';
 $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Datos de la <?= $nameModel ?></title>
+    <title><?= $_ENV['TITLE_SITE'] ?> | Datos del <?= $nameModel ?></title>
     <?php require("../../partials/head_imports.php"); ?>
 </head>
 <body class="hold-transition sidebar-mini">
@@ -32,7 +32,7 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1>Información de la <?= $nameModel ?></h1>
+                        <h1>Información del <?= $nameModel ?></h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
@@ -56,14 +56,13 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                         <!-- Horizontal Form -->
                         <div class="card card-green">
                             <?php if (!empty($_GET["id"]) && isset($_GET["id"])) {
-                                $DataVentas = VentasController::searchForID(["id" => $_GET["id"]]);
-                                /* @var $DataVentas Ventas */
-                                if (!empty($DataVentas)) {
+                                $DataCategoria = CategoriasController::searchForID(["id" => $_GET["id"]]);
+                                /* @var $DataCategoria Categorias */
+                                if (!empty($DataCategoria)) {
                                     ?>
                                     <div class="card-header">
-                                        <h3 class="card-title"><i class="fas fa-shopping-cart"></i> &nbsp; Ver
-                                            Información de <?= $DataVentas->getNumeroSerie() ?>
-                                            -<?= $DataVentas->getId() ?></h3>
+                                        <h3 class="card-title"><i class="fas fa-box"></i> &nbsp; Ver Información
+                                            de <?= $DataCategoria->getNombre() ?? '' ?></h3>
                                         <div class="card-tools">
                                             <button type="button" class="btn btn-tool" data-card-widget="card-refresh"
                                                     data-source="show.php" data-source-selector="#card-refresh-content"
@@ -79,29 +78,22 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                         </div>
                                     </div>
                                     <div class="card-body">
-                                        <p>
-
-                                            <strong><i class="fas fa-sort-numeric-down mr-1"></i> Numero</strong>
-                                        <p class="text-muted">
-                                            <?= $DataVentas->getNumeroSerie() . "-" . $DataVentas->getId(); ?>
-                                        </p>
-                                        <hr>
-                                        <strong><i class="fas fa-user-ninja mr-1"></i> Cliente</strong>
-                                        <p class="text-muted"><?= $DataVentas->getCliente()->getNombres() . " " . $DataVentas->getCliente()->getApellidos() ?></p>
-                                        <hr>
-                                        <strong><i class="far fa-user mr-1"></i> Empleado</strong>
-                                        <p class="text-muted"><?= $DataVentas->getEmpleado()->getNombres() . " " . $DataVentas->getEmpleado()->getApellidos() ?></p>
-                                        <hr>
-                                        <strong><i class="far fa-calendar mr-1"></i> Fecha Venta</strong>
-                                        <p class="text-muted"><?= $DataVentas->getFechaVenta(); ?></p>
-                                        <hr>
-                                        <strong><i class="fas fa-money-bill mr-1"></i> Monto</strong>
-                                        <p class="text-muted"><?= GeneralFunctions::formatCurrency($DataVentas->getMonto()); ?></p>
-                                        <hr>
-                                        <strong><i class="fas fa-cog mr-1"></i> Estado</strong>
-                                        <p class="text-muted"><?= $DataVentas->getEstado(); ?></p>
-                                        </p>
-
+                                        <div class="row">
+                                            <div class="col-sm-10">
+                                                <p>
+                                                    <strong><i class="fas fa-book mr-1"></i> Nombre</strong>
+                                                <p class="text-muted">
+                                                    <?= $DataCategoria->getNombre() ?>
+                                                </p>
+                                                <hr>
+                                                <strong><i class="fas fa-align-justify mr-1"></i> Descripción</strong>
+                                                <p class="text-muted"><?= $DataCategoria->getDescripcion() ?></p>
+                                                <hr>
+                                                <strong><i class="far fa-file-alt mr-1"></i> Estado</strong>
+                                                <p class="text-muted"><?= $DataCategoria->getEstado() ?></p>
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="card-footer">
                                         <div class="row">
@@ -112,9 +104,9 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                 </a>
                                             </div>
                                             <div class="col-auto">
-                                                <a role="button" href="create.php" class="btn btn-primary float-right"
+                                                <a role="button" href="edit.php?id=<?= $DataCategoria->getId(); ?>" class="btn btn-primary float-right"
                                                    style="margin-right: 5px;">
-                                                    <i class="fas fa-plus"></i> Crear <?= $nameModel ?>
+                                                    <i class="fas fa-edit"></i> Editar <?= $nameModel ?>
                                                 </a>
                                             </div>
                                         </div>

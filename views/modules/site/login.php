@@ -6,23 +6,22 @@ require_once("../../partials/routes.php");
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Iniciar Sesión</title>
+    <title><?= $_ENV['TITLE_SITE'] ?> | Login</title>
     <?php require("../../partials/head_imports.php"); ?>
 </head>
-<body  class="hold-transition login-page" >
-
+<body class="hold-transition login-page">
 
 <div class="login-box">
     <div class="login-logo">
-        <a href="login.php"><b>PLOT</b>TER </a>
+        <a href="login.php"><b>Web</b>ER</a>
     </div>
     <!-- /.login-logo -->
     <div class="card">
         <div class="card-body login-card-body">
             <p class="login-box-msg">Ingrese sus datos para iniciar sesión</p>
-            <form action="../../../app/Controllers/UsuariosController.php?action=login" method="post">
+            <form action="../../../app/Controllers/MainController.php?controller=Usuarios&action=login" method="post">
                 <div class="input-group mb-3">
-                    <input type="text" id="user" name="user" class="form-control" placeholder="Usuario">
+                    <input type="text" id="user" name="user" class="form-control" placeholder="User">
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-user"></span>
@@ -30,24 +29,20 @@ require_once("../../partials/routes.php");
                     </div>
                 </div>
                 <div class="input-group mb-3">
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Contraseña">
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Password">
                     <div class="input-group-append">
                         <div class="input-group-text">
                             <span class="fas fa-lock"></span>
                         </div>
                     </div>
                 </div>
-
-                <div class="row justify-content-center">
+                <div class="row">
                     <!-- /.col -->
                     <div class="col-4">
-                        <button type="submit" class="btn btn-success btn-block">Ingresar</button>
+                        <button type="submit" class="btn btn-primary btn-block">Ingresar</button>
                     </div>
                     <!-- /.col -->
                 </div>
-                <p class="mb-1">
-                    <a href="forgot-password.html">I forgot my password</a>
-                </p>
                 <br>
                 <?php if (!empty($_GET['respuesta'])) { ?>
                     <?php if ( !empty($_GET['respuesta']) && $_GET['respuesta'] != "correcto" ) { ?>

@@ -1,15 +1,26 @@
 <?php
-require_once("../../../app/Controllers/ProductosController.php");
+require_once("../../../app/Controllers/UsuariosController.php");
 require_once("../../partials/routes.php");
 require_once("../../partials/check_login.php");
 
+use App\Controllers\CategoriasController;
 use App\Controllers\ProductosController;
+use App\Models\GeneralFunctions;
+use App\Models\Productos;
+use App\Models\Categorias;
 
+$nameModel = "Producto";
+$pluralModel = $nameModel.'s';
+$frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
+
+/* Si llega el idCategoria cargar los datos de esa categoria */
+/* @var $_SESSION['idCategoria'] Categorias */
+$_SESSION['idCategoria'] = !empty($_GET['idCategoria']) ? CategoriasController::searchForID(['id' => $_GET['idCategoria']]) : NULL;
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Layout</title>
+    <title><?= $_ENV['TITLE_SITE'] ?> | Gestión de <?= $pluralModel ?></title>
     <?php require("../../partials/head_imports.php"); ?>
     <!-- DataTables -->
     <link rel="stylesheet" href="<?= $adminlteURL ?>/plugins/datatables-bs4/css/dataTables.bootstrap4.css">

@@ -62,9 +62,9 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                             data-source="create.php" data-source-selector="#card-refresh-content"
                                             data-load-on-init="false"><i class="fas fa-sync-alt"></i></button>
                                     <button type="button" class="btn btn-tool" data-card-widget="maximize"><i
-                                            class="fas fa-expand"></i></button>
+                                                class="fas fa-expand"></i></button>
                                     <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                                            class="fas fa-minus"></i></button>
+                                                class="fas fa-minus"></i></button>
                                 </div>
                             </div>
                             <!-- /.card-header -->
@@ -86,19 +86,21 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                 <label for="descripcion" class="col-sm-2 col-form-label">Descripción</label>
                                                 <div class="col-sm-10">
                                                     <textarea class="form-control" id="descripcion" name="descripcion" rows="4"
-                                                              placeholder="Ingrese una descripción"><?= $frmSession['descripcion'] ?? '' ?></textarea>
+                                                      placeholder="Ingrese una descripción"><?= $frmSession['descripcion'] ?? '' ?></textarea>
                                                 </div>
                                             </div>
                                             <div class="form-group row">
                                                 <label for="producto_id" class="col-sm-2 col-form-label">Producto</label>
                                                 <div class="col-sm-10">
-                                                    <?= ProductosController::selectProducto(false,
-                                                        true,
-                                                        'producto_id',
-                                                        'producto_id',
-                                                        !empty($_SESSION['idProducto']) ? $_SESSION['idProducto']->getId() : '',
-                                                        'form-control select2bs4 select2-info',
-                                                        "estado = 'Activo'")
+                                                    <?= ProductosController::selectProducto(
+                                                        array (
+                                                            'id' => 'producto_id',
+                                                            'name' => 'producto_id',
+                                                            'defaultValue' => !empty($_SESSION['idProducto']) ? $_SESSION['idProducto']->getId() : '',
+                                                            'class' => 'form-control select2bs4 select2-info',
+                                                            'where' => "estado = 'Activo'"
+                                                        )
+                                                    )
                                                     ?>
                                                 </div>
                                             </div>
