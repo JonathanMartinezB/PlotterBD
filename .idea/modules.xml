@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/PlotterBD.iml" filepath="$PROJECT_DIR$/.idea/PlotterBD.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../../WebER/.idea/WebER.iml" filepath="$PROJECT_DIR$/../../WebER/.idea/WebER.iml" />
     </modules>
   </component>
 </project>

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Controllers;
 
 require (__DIR__.'/../../vendor/autoload.php');
