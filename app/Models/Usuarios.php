@@ -1,7 +1,7 @@
 <?php
 namespace App\Models;
 
-use App\Models\Interfaces\Model;
+use App\Interfaces\Model;
 use Carbon\Carbon;
 use Exception;
 use JsonSerializable;
@@ -285,7 +285,7 @@ class Usuarios extends AbstractDBConnection implements Model, JsonSerializable
      */
     public function setFechaRegistro(Carbon $fecha_registro): void
     {
-        $this->fecha_nacimiento = $fecha_registro;
+        $this->fecha_registro = $fecha_registro;
     }
 
     /**

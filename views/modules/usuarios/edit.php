@@ -179,14 +179,6 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                             ?>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group row">
-                                                        <label for="fecha_nacimiento" class="col-sm-2 col-form-label">Fecha Nacimiento</label>
-                                                        <div class="col-sm-10">
-                                                            <input required type="date" max="<?= Carbon::now()->subYear(12)->format('Y-m-d') ?>"
-                                                                   value="<?= $DataUsuario->getFechaNacimiento()->toDateString(); ?>" class="form-control" id="fecha_nacimiento"
-                                                                   name="fecha_nacimiento" placeholder="Ingrese su Fecha de Nacimiento">
-                                                        </div>
-                                                    </div>
                                                     <?php if ($_SESSION['UserInSession']['rol'] == 'Administrador'){ ?>
                                                         <div class="form-group row">
                                                             <label for="user" class="col-sm-2 col-form-label">Usuario</label>
@@ -221,6 +213,14 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                                     <option <?= ($DataUsuario->getEstado() == "Activo") ? "selected" : ""; ?> value="Activo">Activo</option>
                                                                     <option <?= ($DataUsuario->getEstado() == "Inactivo") ? "selected" : ""; ?> value="Inactivo">Inactivo</option>
                                                                 </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group row">
+                                                            <label for="fecha_registro" class="col-sm-2 col-form-label">Fecha Registro</label>
+                                                            <div class="col-sm-10">
+                                                                <input required type="date" max="<?= Carbon::now()->subYear(12)->format('Y-m-d') ?>"
+                                                                       value="<?= $DataUsuario->getFechaRegistro()->toDateString(); ?>" class="form-control" id="fecha_registro"
+                                                                       name="fecha_registro" placeholder="Ingrese su Fecha de Registro">
                                                             </div>
                                                         </div>
                                                     <?php } ?>
