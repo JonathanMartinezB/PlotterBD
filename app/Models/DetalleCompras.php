@@ -187,6 +187,7 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
         }
 
         $this->Connect();
+        var_dump($arrData);
         $result = $this->insertRow($query, $arrData);
         $this->Disconnect();
         return $result;
@@ -194,7 +195,7 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
 
     function insert()
     {
-        $query = "INSERT INTO plotter.detalle_compras VALUES (:id,:compra_id,:producto_id,:cantidad,:precio_compra,:created_at)";
+        $query = "INSERT INTO plotter.detalle_compras VALUES (:id,:producto_id, :compra_id,:cantidad,:precio_compra,:created_at)";
         if($this->save($query)){
             return $this->getProducto()->substractStock($this->getCantidad());
         }

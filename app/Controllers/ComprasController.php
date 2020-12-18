@@ -17,7 +17,7 @@ class ComprasController{
         $this->dataCompra = array();
         $this->dataCompra['id'] = $_FORM['id'] ?? NULL;
         $this->dataCompra['numero_serie'] = $_FORM['numero_serie'] ?? '';
-        $this->dataCompra['cliente_id'] = $_FORM['cliente_id'] ?? 0;
+        $this->dataCompra['proveedor_id'] = $_FORM['proveedor_id'] ?? 0;
         $this->dataCompra['empleado_id'] = $_FORM['empleado_id'] ?? 0;
         $this->dataCompra['fecha_compra'] = !empty($_FORM['fecha_compra']) ? Carbon::parse($_FORM['fecha_compra']) : new Carbon();
         $this->dataCompra['monto'] = $_FORM['monto'] ?? 0;
