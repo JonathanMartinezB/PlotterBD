@@ -106,9 +106,6 @@ $frmSession = $_SESSION['frm' . $pluralModel] ?? NULL;
                                                 <strong><i class="far fa-file-alt mr-1"></i> Estado y Rol</strong>
                                                 <p class="text-muted"><?= $DataUsuario->getEstado() . " - " . $DataUsuario->getRol() ?></p>
                                                 </p>
-                                                <hr>
-                                                <strong><i class="far fa-calendar mr-1"></i> Fecha Registro</strong>
-                                                <p class="text-muted"><?= $DataUsuario->getFechaRegistro(); ?></p>
                                             </div>
                                             <div class="col-sm-2">
                                                 <div class="row info-box">

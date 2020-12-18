@@ -208,7 +208,7 @@ if (!empty($_GET['id'])) {
                                                             <td><?= $detalleCompra->getId(); ?></td>
                                                             <td><?= $detalleCompra->getProducto()->getNombre(); ?></td>
                                                             <td><?= $detalleCompra->getCantidad(); ?></td>
-                                                            <td><?= GeneralFunctions::formatCurrency($detalleCompra->getPrecioVenta()); ?></td>
+                                                            <td><?= GeneralFunctions::formatCurrency($detalleCompra->getPrecioCompra()); ?></td>
                                                             <td><?= GeneralFunctions::formatCurrency($detalleCompra->getTotalProducto()); ?></td>
                                                             <td>
                                                                 <a type="button"
@@ -293,9 +293,9 @@ if (!empty($_GET['id'])) {
                                 </div>
                             </div>
                             <div class="form-group row">
-                                <label for="precio_venta" class="col-sm-4 col-form-label">Precio Unitario</label>
+                                <label for="precio_compra" class="col-sm-4 col-form-label">Precio Unitario</label>
                                 <div class="col-sm-8">
-                                    <input required readonly type="number" min="1" class="form-control" id="precio_venta" name="precio_venta"
+                                    <input required readonly type="number" min="1" class="form-control" id="precio_compra" name="precio_compra"
                                            placeholder="0.0">
                                 </div>
                             </div>
@@ -342,15 +342,15 @@ if (!empty($_GET['id'])) {
                         request: 'ajax'
                     }, "json"
                 )
-                .done(function( resultProducto ) {
-                    dataProducto = resultProducto;
-                })
-                .fail(function(err) {
-                    console.log( "Error al realizar la consulta"+err );
-                })
-                .always(function() {
-                    updateDataProducto(dataProducto);
-                });
+                    .done(function( resultProducto ) {
+                        dataProducto = resultProducto;
+                    })
+                    .fail(function(err) {
+                        console.log( "Error al realizar la consulta"+err );
+                    })
+                    .always(function() {
+                        updateDataProducto(dataProducto);
+                    });
             }else{
                 updateDataProducto(dataProducto);
             }
@@ -363,14 +363,14 @@ if (!empty($_GET['id'])) {
                 $("#spPrecioVenta").html("$"+dataProducto.precio_venta);
                 $("#spStock").html(dataProducto.stock+" Unidad(es)");
                 $("#cantidad").attr("max",dataProducto.stock);
-                $("#precio_venta").val(dataProducto.precio_venta);
+                $("#precio_compra").val(dataProducto.precio_venta);
             }else{
                 $("#divResultProducto").slideUp();
                 $("#spPrecio").html("");
                 $("#spPrecioVenta").html("");
                 $("#spStock").html("");
                 $("#cantidad").removeAttr("max").val('0');
-                $("#precio_venta").val('0.0');
+                $("#precio_compra").val('0.0');
                 $("#total_producto").val('0.0');
             }
         }

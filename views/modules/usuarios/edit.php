@@ -218,7 +218,7 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                         <div class="form-group row">
                                                             <label for="fecha_registro" class="col-sm-2 col-form-label">Fecha Registro</label>
                                                             <div class="col-sm-10">
-                                                                <input required type="date" max="<?= Carbon::now()->subYear(12)->format('Y-m-d') ?>"
+                                                                <input required type="date"
                                                                        value="<?= $DataUsuario->getFechaRegistro()->toDateString(); ?>" class="form-control" id="fecha_registro"
                                                                        name="fecha_registro" placeholder="Ingrese su Fecha de Registro">
                                                             </div>
