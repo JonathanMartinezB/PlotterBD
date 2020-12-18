@@ -96,13 +96,6 @@ $frmSession = $_SESSION['frm' . $pluralModel] ?? NULL;
                                                     , <?= $DataUsuario->getMunicipio()->getNombre() ?>
                                                     - <?= $DataUsuario->getMunicipio()->getDepartamento()->getNombre() ?></p>
                                                 <hr>
-                                                <strong><i class="fas fa-calendar mr-1"></i> Fecha Nacimiento</strong>
-                                                <p class="text-muted"><?= $DataUsuario->getFechaNacimiento()->translatedFormat('l, j \\de F Y'); ?>
-                                                    &nbsp;
-                                                    🎉Tienes: <?= $DataUsuario->getFechaNacimiento()->diffInYears(); ?>
-                                                    Años🤡
-                                                </p>
-                                                <hr>
                                                 <strong><i class="fas fa-phone mr-1"></i> Telefono</strong>
                                                 <p class="text-muted"><?= $DataUsuario->getTelefono() ?></p>
                                                 <hr>
@@ -113,6 +106,9 @@ $frmSession = $_SESSION['frm' . $pluralModel] ?? NULL;
                                                 <strong><i class="far fa-file-alt mr-1"></i> Estado y Rol</strong>
                                                 <p class="text-muted"><?= $DataUsuario->getEstado() . " - " . $DataUsuario->getRol() ?></p>
                                                 </p>
+                                                <hr>
+                                                <strong><i class="far fa-calendar mr-1"></i> Fecha Registro</strong>
+                                                <p class="text-muted"><?= $DataUsuario->getFechaRegistro(); ?></p>
                                             </div>
                                             <div class="col-sm-2">
                                                 <div class="row info-box">

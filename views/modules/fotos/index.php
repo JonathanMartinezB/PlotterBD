@@ -94,7 +94,7 @@ $_SESSION['idProducto'] = !empty($_GET['idProducto']) ? ProductosController::sea
                                             <thead>
                                             <tr>
                                                 <th>#</th>
-                                                <th>Nombres</th>
+                                                <th>Nombre</th>
                                                 <th>Descripción</th>
                                                 <th>Producto</th>
                                                 <th>Foto</th>
@@ -156,7 +156,7 @@ $_SESSION['idProducto'] = !empty($_GET['idProducto']) ? ProductosController::sea
                                             <tfoot>
                                             <tr>
                                                 <th>#</th>
-                                                <th>Nombres</th>
+                                                <th>Nombre</th>
                                                 <th>Descripción</th>
                                                 <th>Producto</th>
                                                 <th>Foto</th>

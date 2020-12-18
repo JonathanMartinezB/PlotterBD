@@ -107,7 +107,7 @@ $_SESSION['idCategoria'] = !empty($_GET['idCategoria']) ? CategoriasController::
                                             <thead>
                                             <tr>
                                                 <th>#</th>
-                                                <th>Nombres</th>
+                                                <th>Nombre</th>
                                                 <th>Precio</th>
                                                 <th>Ganancia</th>
                                                 <th>Venta</th>
@@ -124,7 +124,7 @@ $_SESSION['idCategoria'] = !empty($_GET['idCategoria']) ? CategoriasController::
                                                 ?>
                                                 <tr>
                                                     <td><?php echo $producto->getId(); ?></td>
-                                                    <td><?php echo $producto->getNombres(); ?></td>
+                                                    <td><?php echo $producto->getNombre(); ?></td>
                                                     <td>$ <?php echo $producto->getPrecio(); ?></td>
                                                     <td><?php echo $producto->getPorcentajeGanancia(); ?>%</td>
                                                     <td>$ <?php echo $producto->getPrecioVenta(); ?></td>
@@ -159,7 +159,7 @@ $_SESSION['idCategoria'] = !empty($_GET['idCategoria']) ? CategoriasController::
                                             <tfoot>
                                             <tr>
                                                 <th>#</th>
-                                                <th>Nombres</th>
+                                                <th>Nombre</th>
                                                 <th>Precio</th>
                                                 <th>Ganancia</th>
                                                 <th>Venta</th>

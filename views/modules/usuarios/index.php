@@ -125,7 +125,7 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                         <?php } ?>
                                                     </td>
                                                     <td><?= $usuario->getEstado(); ?></td>
-                                                    <td><?= $usuario->getFechaRegistro()->translatedFormat('l, j \\de F Y'); ?></td>
+                                                    <td><?= $usuario->getFechaRegistro(); ?></td>
 
                                                     <td>
 
@@ -163,10 +163,10 @@ $frmSession = $_SESSION['frm'.$pluralModel] ?? NULL;
                                                 <th>Documento</th>
                                                 <th>Telefono</th>
                                                 <th>Direccion</th>
-                                                <th>Fecha Nacimiento</th>
                                                 <th>Rol</th>
                                                 <th>Foto</th>
                                                 <th>Estado</th>
+                                                <th>Fecha Registro</th>
                                                 <th>Acciones</th>
                                             </tr>
                                             </tfoot>
