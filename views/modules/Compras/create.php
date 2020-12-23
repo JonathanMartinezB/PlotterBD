@@ -106,7 +106,7 @@ if (!empty($_GET['id'])) {
                                     </div>
 
                                     <div class="form-group row">
-                                        <label for="cliente_id" class="col-sm-4 col-form-label">Proveedor</label>
+                                        <label for="proveedor_id" class="col-sm-4 col-form-label">Proveedor</label>
                                         <div class="col-sm-8">
                                             <?= UsuariosController::selectUsuario(
                                                 array (
@@ -133,14 +133,14 @@ if (!empty($_GET['id'])) {
                                             </div>
                                         </div>
                                         <div class="form-group row">
-                                            <label for="numero_serie" class="col-sm-4 col-form-label">Fecha
+                                            <label for="fecha_compra" class="col-sm-4 col-form-label">Fecha
                                                 Compra</label>
                                             <div class="col-sm-8">
                                                 <?= $dataCompra->getFechaCompra() ?>
                                             </div>
                                         </div>
                                         <div class="form-group row">
-                                            <label for="numero_serie" class="col-sm-4 col-form-label">Monto</label>
+                                            <label for="monto" class="col-sm-4 col-form-label">Monto</label>
                                             <div class="col-sm-8">
                                                 <?= GeneralFunctions::formatCurrency($dataCompra->getMonto()) ?>
                                             </div>

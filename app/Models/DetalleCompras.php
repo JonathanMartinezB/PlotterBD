@@ -187,7 +187,6 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
         }
 
         $this->Connect();
-        var_dump($arrData);
         $result = $this->insertRow($query, $arrData);
         $this->Disconnect();
         return $result;
