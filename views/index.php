@@ -4,7 +4,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title><?= $_ENV['TITLE_SITE'] ?> | Home</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Xanh+Mono&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital,wght@1,700&display=swap" rel="stylesheet">
+     <title><?= $_ENV['TITLE_SITE'] ?> | Home</title>
     <?php require("partials/head_imports.php"); ?>
 </head>
 <body class="hold-transition sidebar-mini">
@@ -40,23 +44,12 @@
             <!-- Default box -->
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Título Modulo</h3>
+                    <h3 class="admin"><span class="underline--magical">Bienvenido Administrador</span></h3>
 
-                    <div class="card-tools">
-                        <button type="button" class="btn btn-tool" data-card-widget="collapse" data-toggle="tooltip" title="Collapse">
-                            <i class="fas fa-minus"></i></button>
-                        <button type="button" class="btn btn-tool" data-card-widget="remove" data-toggle="tooltip" title="Remove">
-                            <i class="fas fa-times"></i></button>
-                    </div>
+
                 </div>
-                <div class="card-body">
-                    Contenido del modulo
-                </div>
-                <!-- /.card-body -->
-                <div class="card-footer">
-                    Pie de Página.
-                </div>
-                <!-- /.card-footer-->
+                <div class="macro"></div>
+
             </div>
             <!-- /.card -->
         </section>
