@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Controllers;
 
 require (__DIR__.'/../../vendor/autoload.php');
@@ -17,8 +16,8 @@ class ComprasController{
         $this->dataCompra = array();
         $this->dataCompra['id'] = $_FORM['id'] ?? NULL;
         $this->dataCompra['numero_serie'] = $_FORM['numero_serie'] ?? '';
-        $this->dataCompra['proveedor_id'] = $_FORM['proveedor_id'] ?? 0;
         $this->dataCompra['empleado_id'] = $_FORM['empleado_id'] ?? 0;
+        $this->dataCompra['proveedor_id'] = $_FORM['proveedor_id'] ?? 0;
         $this->dataCompra['fecha_compra'] = !empty($_FORM['fecha_compra']) ? Carbon::parse($_FORM['fecha_compra']) : new Carbon();
         $this->dataCompra['monto'] = $_FORM['monto'] ?? 0;
         $this->dataCompra['estado'] = $_FORM['estado'] ?? 'En progreso';
@@ -84,9 +83,9 @@ class ComprasController{
 
     static public function cancel(){
         try {
-            $ObjCompra = Compras::searchForId($_GET['Id']);
-            $ObjCompra->setEstado("Cancelada");
-            if($ObjCompra->update()){
+            $ObjVenta = Compras::searchForId($_GET['Id']);
+            $ObjVenta->setEstado("Cancelada");
+            if($ObjVenta->update()){
                 header("Location: ../../views/modules/compras/index.php");
             }else{
                 header("Location: ../../views/modules/compras/index.php?respuesta=error&mensaje=Error al guardar");
@@ -122,16 +121,16 @@ class ComprasController{
         if(count($arrCompras) > 0){
             /* @var $arrCompras Compras[] */
             foreach ($arrCompras as $compras)
-                if (!ComprasController::compraIsInArray($compras->getId(),$params['arrExcluir']))
+                if (!ComprasController::CompraIsInArray($compras->getId(),$params['arrExcluir']))
                     $htmlSelect .= "<option ".(($compras != "") ? (($params['defaultValue'] == $compras->getId()) ? "selected" : "" ) : "")." value='".$compras->getId()."'>".$compras->getNumeroSerie()."</option>";
         }
         $htmlSelect .= "</select>";
         return $htmlSelect;
     }
 
-    public static function ventaIsInArray($idCompra, $ArrCompras){
-        if(count($ArrCompras) > 0){
-            foreach ($ArrCompras as $Compra){
+    public static function CompraIsInArray($idCompra, $ArrCompra){
+        if(count($ArrCompra) > 0){
+            foreach ($ArrCompra as $Compra){
                 if($Compra->getId() == $idCompra){
                     return true;
                 }

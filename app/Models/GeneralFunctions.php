@@ -50,11 +50,11 @@ final class GeneralFunctions
             if($archivos->processed){
                 return $archivos->file_dst_name;
             }else{
-                GeneralFunctions::logFile('Archivo No Subido',['descripcion' => "Error en la carpeta..",$archivos->error]);
+                GeneralFunctions::logFile("Archivo No Subido, Error en la carpeta..",$archivos->error,'error');
                 return false;
             }
         }else{
-            GeneralFunctions::logFile('Archivo No Subido',['descripcion' => "Error en la carpeta..",$archivos->error]);
+            GeneralFunctions::logFile("Archivo No Subido, Error en la carpeta..",$archivos->error,'error');
             return false;
         }
     }
