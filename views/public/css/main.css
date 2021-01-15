@@ -1,9 +1,29 @@
-#example{font-size:16px;color:#18F483}.login-page,.register-page{background-image:url("../img/pepe.png");background-position:center;background-repeat:no-repeat;background-size:cover}.login-logo{text-shadow:-3px -3px 8px rgba(15,63,74,0.94)}.login-logo a,.register-logo a{color:aliceblue}
+#example{font-size:16px;color:#18F483}.login-page,.register-page{background-image:url("../img/pepe.png");background-position:center;background-repeat:no-repeat;background-size:cover}.login-logo{text-shadow:-3px -3px 8px rgba(15, 63, 74, 0.94)
+                                                                                                                                                                                      }  .login-logo a,.register-logo a{color:aliceblue}
 .brand-link .brand-image { !important;
     background-image: url("../img/pi.png");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
 }
-
-
+.admin {
+    font-family: 'PT Serif', serif;
+    font-size: 4vw;
+    text-align: center;
+}
+.underline--magical{
+    background-image: linear-gradient(5deg, rgb(159, 238, 144) 10%, rgb(217, 111, 111) 100%);
+    background-repeat: no-repeat;
+    background-size: 100% 0.9em;
+    background-position: 0 88%;
+    transition: background-size 0.25s ease-in;
+}
+.macro{
+    background-image: url("../img/pu.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    width: 75vw;
+    height: 20rem;
+    display:flex;
+    margin:0 auto;
+}
