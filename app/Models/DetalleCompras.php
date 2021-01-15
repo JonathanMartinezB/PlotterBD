@@ -10,15 +10,15 @@ use JsonSerializable;
 class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializable
 {
     private ?int $id;
-    private int $compras_id;
     private int $producto_id;
+    private int $compra_id;
     private int $cantidad;
-    private float $precio_compra;
+    private float $precio_venta;
     private Carbon $created_at;
 
     /* Relaciones */
-    private ?Compras $compra;
     private ?Productos $producto;
+    private ?Compras $compra;
 
     /**
      * Detalle Compra constructor. Recibe un array asociativo
@@ -28,10 +28,10 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
     {
         parent::__construct();
         $this->setId($detalle_compra['id'] ?? NULL);
-        $this->setComprasId($detalle_compra['compra_id'] ?? 0);
         $this->setProductoId($detalle_compra['producto_id'] ?? 0);
+        $this->setCompraId($detalle_compra['compra_id'] ?? 0);
         $this->setCantidad($detalle_compra['cantidad'] ?? 0);
-        $this->setPrecioCompra($detalle_compra['precio_compra'] ?? 0.0);
+        $this->setPrecioVenta($detalle_compra['precio_venta'] ?? 0.0);
         $this->setCreatedAt(!empty($categoria['created_at']) ? Carbon::parse($categoria['created_at']) : new Carbon());
     }
 
@@ -60,22 +60,6 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
     }
 
     /**
-     * @return int|mixed
-     */
-    public function getComprasId() : int
-    {
-        return $this->compras_id;
-    }
-
-    /**
-     * @param int|mixed $compras_id
-     */
-    public function setComprasId(int $compras_id): void
-    {
-        $this->compras_id = $compras_id;
-    }
-
-    /**
      * @return int
      */
     public function getProductoId(): int
@@ -89,6 +73,22 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
     public function setProductoId(int $producto_id): void
     {
         $this->producto_id = $producto_id;
+    }
+
+    /**
+     * @return int|mixed
+     */
+    public function getCompraId() : int
+    {
+        return $this->compra_id;
+    }
+
+    /**
+     * @param int|mixed $compra_id
+     */
+    public function setCompraId(int $compra_id): void
+    {
+        $this->compra_id = $compra_id;
     }
 
     /**
@@ -110,22 +110,22 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
     /**
      * @return float|mixed
      */
-    public function getPrecioCompra() : float
+    public function getPrecioVenta() : float
     {
-        return $this->precio_compra;
+        return $this->precio_venta;
     }
 
     /**
-     * @param float|mixed $precio_compra
+     * @param float|mixed $precio_venta
      */
-    public function setPrecioCompra(float $precio_compra): void
+    public function setPrecioVenta(float $precio_venta): void
     {
-        $this->precio_compra = $precio_compra;
+        $this->precio_venta = $precio_venta;
     }
 
     public function getTotalProducto() : float
     {
-        return $this->getPrecioCompra() * $this->getCantidad();
+        return $this->getPrecioVenta() * $this->getCantidad();
     }
 
     /**
@@ -146,20 +146,20 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
 
     /* Relaciones */
     /**
-     * Retorna el objeto compra correspondiente al detalle compra
+     * Retorna el objeto venta correspondiente al detalle venta
      * @return Compras|null
      */
     public function getCompra(): ?Compras
     {
-        if(!empty($this->compras_id)){
-            $this->compra = Compras::searchForId($this->compras_id) ?? new Compras();
+        if(!empty($this->compra_id)){
+            $this->compra = Compras::searchForId($this->compra_id) ?? new Compras();
             return $this->compra;
         }
         return NULL;
     }
 
     /**
-     * Retorna el objeto producto correspondiente al detalle compra
+     * Retorna el objeto producto correspondiente al detalle venta
      * @return Productos|null
      */
     public function getProducto(): ?Productos
@@ -178,10 +178,10 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
         }else{
             $arrData = [
                 ':id' =>   $this->getId(),
-                ':compra_id' =>   $this->getComprasId(),
                 ':producto_id' =>  $this->getProductoId(),
+                ':compra_id' =>   $this->getCompraId(),
                 ':cantidad' =>   $this->getCantidad(),
-                ':precio_compra' =>   $this->getPrecioCompra(),
+                ':precio_venta' =>   $this->getPrecioVenta(),
                 ':created_at' =>  $this->getCreatedAt()->toDateTimeString(), //YYYY-MM-DD HH:MM:SS
             ];
         }
@@ -194,9 +194,9 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
 
     function insert()
     {
-        $query = "INSERT INTO plotter.detalle_compras VALUES (:id,:producto_id, :compra_id,:cantidad,:precio_compra,:created_at)";
+        $query = "INSERT INTO plotter.detalle_compras VALUES (:id,:producto_id,:compra_id,:cantidad,:precio_venta,:created_at)";
         if($this->save($query)){
-            return $this->getProducto()->substractStock($this->getCantidad());
+            return $this->getProducto()->addStock($this->getCantidad());
         }
         return false;
     }
@@ -207,8 +207,8 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
     public function update() : bool
     {
         $query = "UPDATE plotter.detalle_compras SET 
-            compra_id = :compra_id, producto_id = :producto_id, cantidad = :cantidad, 
-            precio_compra = :precio_compra, created_at = :created_at WHERE id = :id";
+            producto_id = :producto_id, compra_id = :compra_id, cantidad = :cantidad, 
+            precio_venta = :precio_venta, created_at = :created_at WHERE id = :id";
         return $this->save($query);
     }
 
@@ -296,7 +296,7 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
      */
     public function __toString() : string
     {
-        return "Compra: ".$this->compra->getNumeroSerie().", Producto: ".$this->producto->getNombre().", Cantidad: $this->cantidad, Precio Compra: $this->precio_compra";
+        return "Venta: ".$this->compra->getNumeroSerie().", Producto: ".$this->producto->getNombre().", Cantidad: $this->cantidad, Precio Venta: $this->precio_venta";
     }
 
     /**
@@ -309,10 +309,10 @@ class DetalleCompras extends AbstractDBConnection implements Model, JsonSerializ
     public function jsonSerialize()
     {
         return [
-            'compra_id' => $this->getCompra()->jsonSerialize(),
             'producto_id' => $this->getProducto()->jsonSerialize(),
+            'compra_id' => $this->getCompra()->jsonSerialize(),
             'cantidad' => $this->getCantidad(),
-            'precio_compra' => $this->getPrecioCompra(),
+            'precio_venta' => $this->getPrecioVenta(),
             'created_at' => $this->getCreatedAt()->toDateTimeString(),
         ];
     }

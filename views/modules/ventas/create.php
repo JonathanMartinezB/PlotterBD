@@ -361,7 +361,7 @@ if (!empty($_GET['id'])) {
                 $("#spPrecioVenta").html("$"+dataProducto.precio_venta);
                 $("#spStock").html(dataProducto.stock+" Unidad(es)");
                 $("#cantidad").attr("max",dataProducto.stock);
-                $("#precio_venta").val(dataProducto.precio_venta);
+                $("#precio_venta").val(dataProducto.precio);
             }else{
                 $("#divResultProducto").slideUp();
                 $("#spPrecio").html("");
